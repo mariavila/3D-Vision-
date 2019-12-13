@@ -107,14 +107,20 @@ vl = cross(vp1, vp2);
 
 %????????????????????????
 H = [1,0,0;
-    0,1,0;
-    vl'];
+     0,1,0;
+    (vl/vl(3))'];
 %H = inv(H);
 I2 = apply_H2(I, H);
 figure; imshow(uint8(I2));
 
+H_T = [1,0,-vl(1)/vl(3);
+       0,1,-vl(2)/vl(3);
+       0,0,vl(3)/vl(3)];
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
-
+lr1 = H'*l1
+lr2 = H'*l2
+lr3 = H'*l3
+lr4 = H'*l4
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I2));
 hold on;
