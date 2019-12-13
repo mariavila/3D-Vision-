@@ -18,12 +18,12 @@ I=imread('Data/0005_s_mini.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
 %Rotate 90 degrees
-H = [0, -1, 0;
-     1, 0, 0;
+H = [0, 1, 0;
+     -1, 0, 0;
      0, 0, 1];
 %Rotate 45 degrees and translates (10, 10)
-H = [0.70710678, -0.70710678, 10;
-     0.70710678, 0.70710678, 10;
+H = [0.70710678, 0.70710678, 10;
+     -0.70710678, 0.70710678, 10;
      0, 0, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
