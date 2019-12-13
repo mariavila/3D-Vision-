@@ -14,12 +14,17 @@
 
 
 %% 1.1. Similarities
-I=imread('Data/0005_s.png'); % we have to be in the proper folder
+I=imread('Data/0005_s_mini.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
-H = [1, 0, 0;
-     0, 1, 0;
+%Rotate 90 degrees
+H = [0, -1, 0;
+     1, 0, 0;
      0, 0, 1];
+%Rotate 45 degrees and translates (10, 10)
+H = [0.70710678, -0.70710678, 10;
+     0.70710678, 0.70710678, 10;
+     0, 0, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -27,7 +32,9 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
-
+H = [4.5, 8.8, 10;
+     9, -5, 10;
+     0, 0, 1];
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -45,7 +52,9 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.3 Projective transformations (homographies)
 
 % ToDo: generate a matrix H which produces a projective transformation
-
+H = [7.0710678, -7.0710678, 10;
+     7.0710678, 7.0710678, 20;
+     0.5, 0.3, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
