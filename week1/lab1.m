@@ -81,7 +81,11 @@ p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
 % ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
-
+%calculate parallel lines
+l1 = cross(p1,p2);
+l2 = cross(p3,p4);
+l3 = cross(p5,p6);
+l4 = cross(p7,p8);
 
 % show the chosen lines in the image
 figure;imshow(I);
@@ -93,8 +97,20 @@ plot(t, -(l3(1)*t + l3(3)) / l3(2), 'y');
 plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
 
 % ToDo: compute the homography that affinely rectifies the image
+%calculate vanishing points
+vp1 = cross(l1,l2);
+vp1 = vp1/vp1(3);
+vp2 = cross(l3,l4);
+vp2 = vp2/vp2(3);
+%calculate vanishing line
+vl = cross(vp1, vp2);
 
-I2 = apply_H(I, H);
+%????????????????????????
+H = [1,0,0;
+    0,1,0;
+    vl'];
+%H = inv(H);
+I2 = apply_H2(I, H);
 figure; imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
