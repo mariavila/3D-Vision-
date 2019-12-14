@@ -14,13 +14,9 @@
 
 
 %% 1.1. Similarities
-I=imread('Data/0005_s_mini.png'); % we have to be in the proper folder
+I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
-%Rotate 90 degrees
-H = [0, 1, 0;
-     -1, 0, 0;
-     0, 0, 1];
 %Rotate 45 degrees and translates (10, 10)
 H = [0.70710678, 0.70710678, 10;
      -0.70710678, 0.70710678, 10;
@@ -40,13 +36,36 @@ figure; imshow(I); figure; imshow(uint8(I2));
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
+A = H(1:2, 1:2);
+T = H(1:3, 3);
+translation = [1 0 T(1);
+               0 1 T(2);
+               0 0 1];  
+[U,S,V] = svd(A);
+rotation1 = [U(1,1) U(1,2) 0;
+             U(2,1) U(2,2) 0;
+             0 0 1];
+scale = [S(1,1) S(1,2) 0;
+         S(2,1) S(2,2) 0;
+         0 0 1];
+VT = V';
+rotation2 = [VT(1,1) VT(1,2) 0;
+             VT(2,1) VT(2,2) 0;
+             0 0 1];
 
 % ToDo: verify that the product of the four previous transformations
 % produces the same matrix H as above
+H2 =  translation * rotation1 * scale * rotation2;
+isequal(H, H2)
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-
+I3 = apply_H2(I, translation);
+I3 = apply_H2(I3, rotation1);
+I3 = apply_H2(I3, rotation_minus2);
+I3 = apply_H2(I3, scale);
+I3 = apply_H2(I3, rotation2);
+isequal(I2, I3)
 
 
 %% 1.3 Projective transformations (homographies)
