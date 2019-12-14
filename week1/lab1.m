@@ -18,8 +18,8 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
 %Rotate 45 degrees and translates (10, 10)
-H = [0.70710678, -0.70710678, 10;
-     0.70710678, 0.70710678, 10;
+H = [0.70710678, 0.70710678, 10;
+     -0.70710678, 0.70710678, 10;
      0, 0, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
@@ -127,7 +127,7 @@ H = [1,0,0;
      0,1,0;
     (vl/vl(3))'];
 %H = inv(H);
-I2 = apply_H2(I, H);
+I2 = apply_H(I, H);
 figure; imshow(uint8(I2));
 %To transform lines we need the inverse of the transposed homography matrix
 H_T = inv(H)';
@@ -207,7 +207,7 @@ K = chol(S);
 H = [K(1,1), K(1,1), 0;
      K(2,1), K(2,2), 0;
      0, 0, 1];
-I3 = apply_H2(I2, inv(H));
+I3 = apply_H(I2, inv(H));
 figure; imshow(uint8(I3));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Affine and Metric Rectification of the left facade of image 0001
