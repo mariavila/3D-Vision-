@@ -28,8 +28,8 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
-H = [4.5, 8.8, 10;
-     9, -5, 10;
+H = [1.5, 0.8, 10;
+     2, -0.9, 10;
      0, 0, 1];
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
@@ -60,13 +60,11 @@ isequal(H, H2)
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-I3 = apply_H2(I, translation);
-I3 = apply_H2(I3, rotation1);
-I3 = apply_H2(I3, rotation_minus2);
-I3 = apply_H2(I3, scale);
-I3 = apply_H2(I3, rotation2);
+I3 = apply_H(I, translation);
+I3 = apply_H(I3, rotation1);
+I3 = apply_H(I3, scale);
+I3 = apply_H(I3, rotation2);
 isequal(I2, I3)
-
 
 %% 1.3 Projective transformations (homographies)
 
