@@ -18,8 +18,8 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
 %Rotate 45 degrees and translates (10, 10)
-H = [0.70710678, 0.70710678, 10;
-     -0.70710678, 0.70710678, 10;
+H = [0.70710678, -0.70710678, 10;
+     0.70710678, 0.70710678, 10;
      0, 0, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
@@ -122,22 +122,20 @@ vp2 = vp2/vp2(3);
 %calculate vanishing line
 vl = cross(vp1, vp2);
 
-%????????????????????????
+%Write homography normalizing the line
 H = [1,0,0;
      0,1,0;
     (vl/vl(3))'];
 %H = inv(H);
 I2 = apply_H2(I, H);
 figure; imshow(uint8(I2));
-
-H_T = [1,0,-vl(1)/vl(3);
-       0,1,-vl(2)/vl(3);
-       0,0,vl(3)/vl(3)];
+%To transform lines we need the inverse of the transposed homography matrix
+H_T = inv(H)';
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
-lr1 = H'*l1
-lr2 = H'*l2
-lr3 = H'*l3
-lr4 = H'*l4
+lr1 = H_T*l1;
+lr2 = H_T*l2;
+lr3 = H_T*l3;
+lr4 = H_T*l4;
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I2));
 hold on;
@@ -149,7 +147,40 @@ plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
 
 % ToDo: to evaluate the results, compute the angle between the different pair 
 % of lines before and after the image transformation
+omega = [1 0 0;
+         0 1 0;
+         0 0 0];
+%Angle between lines, we use the scalar product
+%Before
+disp('Angles of lines before and after affine homography')
+disp('Before: ')                     
+ang_l12 = radtodeg(acos((omega*l1)'*l2/...
+                         (sqrt((omega*l1)'*l1)*sqrt((omega*l2)'*l2)))); 
+ang_l13 = radtodeg(acos((omega*l1)'*l3/...
+                         (sqrt((omega*l1)'*l1)*sqrt((omega*l3)'*l3)))); 
+ang_l24 = radtodeg(acos((omega*l2)'*l4/...
+                         (sqrt((omega*l2)'*l2)*sqrt((omega*l4)'*l4))));  
+ang_l34 = radtodeg(acos((omega*l3)'*l4/...
+                         (sqrt((omega*l3)'*l3)*sqrt((omega*l4)'*l4))));   
+fprintf('Angle l1 and l2: %f\n', ang_l12)
+fprintf('Angle l1 and l3: %f\n', ang_l13)
+fprintf('Angle l2 and l4: %f\n', ang_l24)
+fprintf('Angle l3 and l4: %f\n', ang_l34) 
 
+%After                     
+disp('After: ')                     
+ang_lr12 = radtodeg(acos((omega*lr1)'*lr2/...
+                         (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr2)'*lr2)))); 
+ang_lr13 = radtodeg(acos((omega*lr1)'*lr3/...
+                         (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr3)'*lr3)))); 
+ang_lr24 = radtodeg(acos((omega*lr2)'*lr4/...
+                         (sqrt((omega*lr2)'*lr2)*sqrt((omega*lr4)'*lr4))));  
+ang_lr34 = radtodeg(acos((omega*lr3)'*lr4/...
+                         (sqrt((omega*lr3)'*lr3)*sqrt((omega*lr4)'*lr4))));   
+fprintf('Angle lr1 and lr2: %f\n', ang_lr12)
+fprintf('Angle lr1 and lr3: %f\n', ang_lr13)
+fprintf('Angle lr2 and lr4: %f\n', ang_lr24)
+fprintf('Angle lr3 and lr4: %f\n', ang_lr34)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Metric Rectification
@@ -162,6 +193,23 @@ plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
 %       Compute also the angles between the pair of lines before and after
 %       rectification.
 
+A = [lr1(1)*lr3(1), lr1(1)*lr3(2)+lr1(2)*lr3(1); 
+     lr2(1)*lr4(1), lr2(1)*lr4(2)+lr2(2)*lr4(1)];
+
+b = [-lr1(2)*lr3(2), -lr2(2)*lr4(2)];
+
+S = A\b';
+
+S = [S(1), S(2);
+     S(2), 1];
+[U,S,V] = svd(S); 
+K = U*sqrt(S)*U';
+
+H = [K(1,1), K(1,1), 0;
+     K(2,1), K(2,2), 0;
+     0, 0, 1];
+I3 = apply_H2(I2, inv(H));
+figure; imshow(uint8(I3));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Affine and Metric Rectification of the left facade of image 0001
 
