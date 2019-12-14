@@ -69,9 +69,9 @@ isequal(I2, I3)
 %% 1.3 Projective transformations (homographies)
 
 % ToDo: generate a matrix H which produces a projective transformation
-H = [7.0710678, -7.0710678, 10;
-     7.0710678, 7.0710678, 20;
-     0.5, 0.3, 1]; 
+H = [1.5, 0.8, 10;
+     -0.3, 0.9, 10;
+     0.001, 0.003, 1]; 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
