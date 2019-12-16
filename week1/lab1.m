@@ -21,6 +21,10 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 H = [0.70710678, 0.70710678, 10;
      -0.70710678, 0.70710678, 10;
      0, 0, 1]; 
+% a = [1 0 0;
+%      0 -1 0;
+%      0 0 0];
+% I2 = apply_H(I, a*H*a);
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -193,15 +197,15 @@ fprintf('Angle lr3 and lr4: %f\n', ang_lr34)
 %       Compute also the angles between the pair of lines before and after
 %       rectification.
 
-A = [lr1(1)*lr3(1), lr1(1)*lr3(2)+lr1(2)*lr3(1); 
-     lr2(1)*lr4(1), lr2(1)*lr4(2)+lr2(2)*lr4(1)];
+A = [lr1(1)*lr3(1), (lr1(1)*lr3(2)+lr1(2)*lr3(1));
+     lr2(2)*lr4(1), (lr2(1)*lr4(2)+lr2(2)*lr4(1))];
+b = [-lr1(2)*lr3(2); -lr2(2)*lr4(2)];
 
-b = [-lr1(2)*lr3(2), -lr2(2)*lr4(2)];
-
-S = A\b';
+S = A\b;
 
 S = [S(1), S(2);
-     S(2), 1];
+    S(2), 1];
+
 K = chol(S);
 
 H = [K(1,1), K(1,1), 0;
@@ -216,6 +220,132 @@ figure; imshow(uint8(I3));
 %       the stratified method (affine + metric). 
 %       Crop the initial image so that only the left facade is visible.
 %       Show the (properly) transformed lines that are used in every step.
+
+% choose the image points
+I=imread('Data/0001_s.png');
+A = load('Data/0001_s_info_lines.txt');
+I = I(:,1:size(I,2)/2,:);
+% indices of lines
+i = 159;
+p1 = [A(i,1) A(i,2) 1]';
+p2 = [A(i,3) A(i,4) 1]';
+i = 614;
+p3 = [A(i,1) A(i,2) 1]';
+p4 = [A(i,3) A(i,4) 1]';
+i = 541;
+p5 = [A(i,1) A(i,2) 1]';
+p6 = [A(i,3) A(i,4) 1]';
+i = 645;
+p7 = [A(i,1) A(i,2) 1]';
+p8 = [A(i,3) A(i,4) 1]';
+
+% ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
+%calculate parallel lines
+l1 = cross(p1,p2);
+l2 = cross(p3,p4);
+l3 = cross(p5,p6);
+l4 = cross(p7,p8);
+
+% show the chosen lines in the image
+figure;imshow(I);
+hold on;
+t=1:0.1:1000;
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'y');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
+
+% ToDo: compute the homography that affinely rectifies the image
+%calculate vanishing points
+vp1 = cross(l1,l2);
+vp1 = vp1/vp1(3);
+vp2 = cross(l3,l4);
+vp2 = vp2/vp2(3);
+%calculate vanishing line
+vl = cross(vp1, vp2);
+
+%Write homography normalizing the line
+H = [1,0,0;
+     0,1,0;
+    (vl/vl(3))'];
+%H = inv(H);
+I2 = apply_H(I, H);
+figure; imshow(uint8(I2));
+%To transform lines we need the inverse of the transposed homography matrix
+H_T = inv(H)';
+% ToDo: compute the transformed lines lr1, lr2, lr3, lr4
+lr1 = H_T*l1;
+lr2 = H_T*l2;
+lr3 = H_T*l3;
+lr4 = H_T*l4;
+% show the transformed lines in the transformed image
+figure; imshow(uint8(I2));
+hold on;
+t=1:0.1:1000;
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'y');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
+
+% ToDo: to evaluate the results, compute the angle between the different pair 
+% of lines before and after the image transformation
+omega = [1 0 0;
+         0 1 0;
+         0 0 0];
+%Angle between lines, we use the scalar product
+%Before
+disp('Angles of lines before and after affine homography')
+disp('Before: ')                     
+ang_l12 = radtodeg(acos((omega*l1)'*l2/...
+                         (sqrt((omega*l1)'*l1)*sqrt((omega*l2)'*l2)))); 
+ang_l13 = radtodeg(acos((omega*l1)'*l3/...
+                         (sqrt((omega*l1)'*l1)*sqrt((omega*l3)'*l3)))); 
+ang_l24 = radtodeg(acos((omega*l2)'*l4/...
+                         (sqrt((omega*l2)'*l2)*sqrt((omega*l4)'*l4))));  
+ang_l34 = radtodeg(acos((omega*l3)'*l4/...
+                         (sqrt((omega*l3)'*l3)*sqrt((omega*l4)'*l4))));   
+fprintf('Angle l1 and l2: %f\n', ang_l12)
+fprintf('Angle l1 and l3: %f\n', ang_l13)
+fprintf('Angle l2 and l4: %f\n', ang_l24)
+fprintf('Angle l3 and l4: %f\n', ang_l34) 
+
+%After                     
+disp('After: ')                     
+ang_lr12 = radtodeg(acos((omega*lr1)'*lr2/...
+                         (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr2)'*lr2)))); 
+ang_lr13 = radtodeg(acos((omega*lr1)'*lr3/...
+                         (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr3)'*lr3)))); 
+ang_lr24 = radtodeg(acos((omega*lr2)'*lr4/...
+                         (sqrt((omega*lr2)'*lr2)*sqrt((omega*lr4)'*lr4))));  
+ang_lr34 = radtodeg(acos((omega*lr3)'*lr4/...
+                         (sqrt((omega*lr3)'*lr3)*sqrt((omega*lr4)'*lr4))));   
+fprintf('Angle lr1 and lr2: %f\n', ang_lr12)
+fprintf('Angle lr1 and lr3: %f\n', ang_lr13)
+fprintf('Angle lr2 and lr4: %f\n', ang_lr24)
+fprintf('Angle lr3 and lr4: %f\n', ang_lr34)
+
+% ToDo: Metric rectification (after the affine rectification) using two non-parallel orthogonal line pairs
+%       As evaluation method you can display the images (before and after
+%       the metric rectification) with the chosen lines printed on it.
+%       Compute also the angles between the pair of lines before and after
+%       rectification.
+
+A = [lr1(1)*lr3(1), (lr1(1)*lr3(2)+lr1(2)*lr3(1));
+     lr2(2)*lr4(1), (lr2(1)*lr4(2)+lr2(2)*lr4(1))];
+b = [-lr1(2)*lr3(2); -lr2(2)*lr4(2)];
+
+S = A\b;
+
+S = [S(1), S(2);
+    S(2), 1];
+
+K = chol(S);
+
+H = [K(1,1), K(1,1), 0;
+     K(2,1), K(2,2), 0;
+     0, 0, 1];
+I3 = apply_H(I2, inv(H));
+figure; imshow(uint8(I3));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step
