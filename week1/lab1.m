@@ -34,7 +34,7 @@ H = [1.5, 0.8, 10;
      0, 0, 1];
 
 [I2,a,a,a,a] = apply_H(I, H);
-figure; imshow(I); figure; imshow(uint8(I2));
+figure; imshow(uint8(I2));
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
@@ -58,16 +58,18 @@ rotation2 = [VT(1,1) VT(1,2) 0;
 % ToDo: verify that the product of the four previous transformations
 % produces the same matrix H as above
 H2 =  translation * rotation1 * scale * rotation2;
-isequal(H, H2)
+disp('Original affinity matrix:');
+H
+disp('Affinity matrix obtained with the product of the four transformations:')
+H2
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-[I3,a,a,a,a] = apply_H(I, translation);
-[I3,a,a,a,a] = apply_H(I3, rotation1);
+[I3,a,a,a,a] = apply_H(I, rotation2);
 [I3,a,a,a,a] = apply_H(I3, scale);
-[I3,a,a,a,a] = apply_H(I3, rotation2);
-isequal(I2, I3)
-
+[I3,a,a,a,a] = apply_H(I3, rotation1);
+[I3,a,a,a,a] = apply_H(I3, translation);
+figure; imshow(uint8(I3));
 
 %% 1.3 Projective transformations (homographies)
 
