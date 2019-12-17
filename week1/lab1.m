@@ -277,7 +277,7 @@ omega = [1 0 0;
          0 1 0;
          0 0 0];
 %Before    
-disp('Angles of lines before and after affine homography')
+disp('Angles of lines before and after metric homography')
 disp('Before: ')                     
 ang_lr13 = radtodeg(acos((omega*lr1)'*lr3/...
                          (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr3)'*lr3)))); 
@@ -389,7 +389,7 @@ plot(t, -(lr6(1)*t + lr6(3)) / lr6(2), 'g');
 
 %Angle between lines, we use the scalar product
 %Before    
-disp('Angles of lines before and after affine homography')
+disp('Angles of lines before and after affine homography of the left facade of image 0001')
 disp('Before: ')                     
 ang_l12 = radtodeg(acos((omega*l1)'*l2/...
                          (sqrt((omega*l1)'*l1)*sqrt((omega*l2)'*l2)))); 
@@ -435,7 +435,7 @@ H = [K(1,1), K(1,2), 0;
      K(2,1), K(2,2), 0;
      0, 0, 1];
 [I3,x_min, x_max, y_min, y_max ] = apply_H(I2, H);
-%!!!!!!! WE NEED TO TRANLATE THE LINES!!!!!!!!!!
+%!!!!!!! WE NEED TO TRANSLATE THE LINES!!!!!!!!!!
 H(1,3) = -x_min;
 H(2,3) = -y_min;
 
@@ -463,7 +463,7 @@ omega = [1 0 0;
          0 1 0;
          0 0 0];
 %Before    
-disp('Angles of lines before and after affine homography')
+disp('Angles of lines before and after metric homography of the left facade of image 0001')
 disp('Before: ')                     
 ang_lr13 = radtodeg(acos((omega*lr1)'*lr3/...
                          (sqrt((omega*lr1)'*lr1)*sqrt((omega*lr3)'*lr3)))); 
