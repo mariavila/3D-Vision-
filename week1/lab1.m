@@ -485,5 +485,118 @@ fprintf('Angle lrr5 and lrr6: %f\n', ang_lrr56)
 %% 5. OPTIONAL: Metric Rectification in a single step
 % Use 5 pairs of orthogonal lines (pages 55-57, Hartley-Zisserman book)
 
+% Load images
+I=imread('Data/0000_s.png');
+A = load('Data/0000_s_info_lines.txt');
+
+% indices of lines
+i = 424;
+p1 = [A(i,1) A(i,2) 1]';
+p2 = [A(i,3) A(i,4) 1]';
+i = 240;
+p3 = [A(i,1) A(i,2) 1]';
+p4 = [A(i,3) A(i,4) 1]';
+i = 712;
+p5 = [A(i,1) A(i,2) 1]';
+p6 = [A(i,3) A(i,4) 1]';
+i = 565;
+p7 = [A(i,1) A(i,2) 1]';
+p8 = [A(i,3) A(i,4) 1]';
 
 
+%lines
+l1 = cross(p1,p2);
+l2 = cross(p3,p4);
+l3 = cross(p5,p6);
+l4 = cross(p7,p8);
+
+%calculate crossing points between lines
+c1 = cross(l1,l3);
+c1 = c1/c1(3);
+c2 = cross(l1,l4);
+c2 = c2/c2(3);
+c3 = cross(l2,l3);
+c3 = c3/c3(3);
+c4 = cross(l2,l4);
+c4 = c4/c4(3);
+%Lines from this new points
+l5 = cross(c1,c4);
+l6 = cross(c3,c2);
+
+
+% show the chosen lines in the image
+figure;imshow(I);
+hold on;
+t=1:0.1:1000;
+plot(c1(1), c1(2)); 
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'r');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'r');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
+plot(t, -(l5(1)*t + l5(3)) / l5(2), 'g');
+plot(t, -(l6(1)*t + l6(3)) / l6(2), 'g');
+
+
+%Our set of perpendicular lines is
+%(l1,l3),(l1,l4),(l2,l3),(l2,l4),(l5,l6)
+A =[l1(1)*l3(1), (l1(1)*l3(2)+l1(2)*l3(1))/2, l1(2)*l3(2),(l1(1)*l3(3)+l1(3)*l3(1))/2, (l1(2)*l3(3)+l1(3)*l3(2))/2;
+    l1(1)*l4(1), (l1(1)*l4(2)+l1(2)*l4(1))/2, l1(2)*l4(2),(l1(1)*l4(3)+l1(3)*l4(1))/2, (l1(2)*l4(3)+l1(3)*l4(2))/2;
+    l2(1)*l3(1), (l2(1)*l3(2)+l2(2)*l3(1))/2, l2(2)*l3(2),(l2(1)*l3(3)+l2(3)*l3(1))/2, (l2(2)*l3(3)+l2(3)*l3(2))/2;
+    l2(1)*l4(1), (l2(1)*l4(2)+l2(2)*l4(1))/2, l2(2)*l4(2),(l2(1)*l4(3)+l2(3)*l4(1))/2, (l2(2)*l4(3)+l2(3)*l4(2))/2;
+    l5(1)*l6(1), (l5(1)*l6(2)+l5(2)*l6(1))/2, l5(2)*l6(2),(l5(1)*l6(3)+l5(3)*l6(1))/2, (l5(2)*l6(3)+l5(3)*l6(2))/2;];
+b = [-l1(3)*l3(3);
+     -l1(3)*l4(3);
+     -l2(3)*l3(3);
+     -l2(3)*l4(3);
+     -l5(3)*l6(3)];
+ 
+sol =  A\b;
+% Build C_inf
+C_inf = [sol(1), sol(2)/2, sol(4)/2;
+         sol(2)/2, sol(3), sol(5)/2;
+         sol(4)/2, sol(5)/2, 1];
+
+%Calculate the homograpy matrix
+[U,D,V] = svd(C_inf);
+H = U*sqrt(D);
+H = inv(H);
+%Scale it to an optimal size
+s = 10000000000;
+S = [s 0 0; 0 s 0; 0 0 1];
+% H(:,3) = H(:,3)/H(3,3);
+[I3,x_min, x_max, y_min, y_max ] = apply_H(I, S*H);
+
+%Apply transformations to lines
+H_T = inv(S*H)';
+lrr1 = H_T*l1;
+lrr2 = H_T*l2;
+lrr3 = H_T*l3;
+lrr4 = H_T*l4;
+lrr5 = H_T*l5;
+lrr6 = H_T*l6;
+
+figure; imshow(I3);
+
+%Calculate angles
+omega = [1 0 0;
+         0 1 0;
+         0 0 0];
+%Before    
+disp('Angles of lines before and after affine homography')
+disp('Before: ')                     
+ang_lr13 = radtodeg(acos((omega*l1)'*lr3/...
+                         (sqrt((omega*l1)'*l1)*sqrt((omega*l3)'*l3)))); 
+ang_lr56 = radtodeg(acos((omega*lr5)'*lr6/...
+                         (sqrt((omega*l5)'*l5)*sqrt((omega*l6)'*l6))));   
+fprintf('Angle lr1 and lr3: %f\n', ang_lr13)
+fprintf('Angle lr5 and lr6: %f\n', ang_lr56)
+     
+     
+%After                     
+disp('After: ')                      
+ang_lrr13 = radtodeg(acos((omega*lrr1)'*lrr3/...
+                         (sqrt((omega*lrr1)'*lrr1)*sqrt((omega*lrr3)'*lrr3)))); 
+ang_lrr56 = radtodeg(acos((omega*lrr5)'*lrr6/...
+                         (sqrt((omega*lrr5)'*lrr5)*sqrt((omega*lrr6)'*lrr6))));    
+fprintf('Angle lrr1 and lrr3: %f\n', ang_lrr13)
+fprintf('Angle lrr5 and lrr6: %f\n', ang_lrr56)
