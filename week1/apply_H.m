@@ -41,17 +41,3 @@ function [ output_image, x_min, x_max, y_min, y_max  ] = apply_H( image, H )
         interp2(X, Y, b, pin(1,:), pin(2,:), 'cubic', 0));
     output_image = uint8(reshape(output_image, [size(Xo,1),size(Xo, 2), 3]));
 end
-    
-    
-%     for i=1:x_max-x_min
-%         for j=1:y_max-y_min
-%             p_out_h = [i + x_min; j + y_min; 1];
-%             p_h = H \ p_out_h;
-%             p_e = [p_h(1)/p_h(3) p_h(2)/p_h(3)];
-%             output_image(i,j,1) = interp2(X, Y, image(:,:,1)', [p_e(1)], [p_e(2)]);
-%             output_image(i,j,2) = interp2(X, Y, image(:,:,2)', [p_e(1)], [p_e(2)]);
-%             output_image(i,j,3) = interp2(X, Y, image(:,:,3)', [p_e(1)], [p_e(2)]);
-%         end
-%     end
-
-
