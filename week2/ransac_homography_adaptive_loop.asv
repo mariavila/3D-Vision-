@@ -44,13 +44,14 @@ function idx_inliers = compute_inliers(H, x1, x2, th)
     % compute the symmetric geometric error
     n_points = size(x1);
     n_points = n_points(2);
+    d2 = 0;
     for i = 1:n_points
         x1p = H*x1(:,i);
         x2p = H*x2(:,i);
-        d2_1 = (x1(1,i)/x1(3,i) - x1p(1)/x1p(3))^2+(x1(2,i)/x1(3,i) - x1p(2)/x1p(3))^2;
-        d2_2 = (x2(1,i)/x2(3,i) - x2p(1)/x2p(3))^2+(x2(2,i)/x2(3,i) - x2p(2)/x2p(3))^2;
-        d2(i) =(d2_1 + d2_2);  
-    end
+        d2_1 = (x1(1,i)/x1(3,i) - x1p(1)/x1p(3))**2
+        d2_2 = (x1(1,i)/x1(3,i) - x1p(1)/x1p(3))**2
+        d2 = d2 + (x1(1,:)./x1(3,:) - x1p(1,:)./x1p(3,:))**2 ;
+        
     idx_inliers = find(d2 < th.^2);
 
 
@@ -71,36 +72,19 @@ function item = randomsample(npts, n)
 function homo = homography2d(x1,x2)
     n_points = size(x1);
     n_points = n_points(2);
-    x1p = normalise(x1);
-    x2p = normalise(x2);
-    mean1 = mean(x1,2);
-    mean2 = mean(x2,2);
-    std1 = std(x1,1,2);
-    std2 = std(x2,1,2);
-    s1 = std1./sqrt(2);
-    s2 = std2./sqrt(2);
-    T1 = [s1(1), 0, -mean1(1);...
-          0, s1(2), -mean1(2);...
-          0, 0, 1];
-    T2 = [s2(1), 0, -mean2(1);...
-          0, s2(2), -mean2(2);...
-          0, 0, 1];
-    x1p = T1 * x1p;
-    x2p = T2 * x2p;
-    count = 1;
+    x1p = x1;
+    x2p = x2;
+%     x1p = normalise(x1);
+%     x2p = normalise(x2);
+    A = empty(2*n_points, 9);
+    count = 0;
     for i = 1:n_points
-        x1i = x1p(:,i);
-        x2i = x2p(:,i);
-        A(count,:) = [0, 0, 0,...
-                     -x2i(3)*x1i(1), -x2i(3)*x1i(2), -x2i(3)*x1i(3), ...
-                      x2i(2).*x1i(1), x2i(2).*x1i(2), x2i(2).*x1i(3)];
-                  
-        A(count+1,:) = [x2i(3)*x1i(1), x2i(3)*x1i(2), x2i(3)*x1i(3), ...
-                        0, 0, 0,...
-                        x2i(1)*x1i(1),x2i(1)*x1i(2),x2i(1)*x1i(3)];
+        x1i = x1p;
+        x2i = x2p;
+        A(count,:) = [0, 0, 0, -x2i(3).*x1i, x2i(2).*x1i];
+        A(count+1,:) = [x2i(3).*x1i, 0, 0, 0, x2i(1).*x1i];
         count = count + 2;
     end
     [U,D,V] = svd(A);
-    h = V(9,:);
+    h = V(n_points);
     homo = reshape(h,3,3);
-    homo = inv(T2)*homo*T1;
