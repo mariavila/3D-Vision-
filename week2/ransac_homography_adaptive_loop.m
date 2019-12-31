@@ -125,4 +125,5 @@ function homo = homography2d_2nd(x1,x2)
     h = V(:,9);
     homo = reshape(h,3,3);
     homo = homo';
-    %homo = T2\homo*T1;
+    %homo = T2\homo
+    %homo = homo*T1;
