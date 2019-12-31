@@ -6,6 +6,8 @@ function [H, idx_inliers] = ransac_homography_adaptive_loop(x1, x2, th, max_it)
 it = 0;
 best_inliers = [];
 while it < max_it
+    it
+    max_it
     
     points = randomsample(Npoints, 4);
     H = homography2d(x1(:,points), x2(:,points)); % ToDo: you have to create this function
@@ -104,3 +106,42 @@ function homo = homography2d(x1,x2)
     h = V(9,:);
     homo = reshape(h,3,3);
     homo = inv(T2)*homo*T1;
+    
+function homo = homography2d_2nd(x1,x2)
+    n_points = size(x1);
+    n_points = n_points(2);
+    x1n = normalise(x1);
+    x2n = normalise(x2);
+    mean1 = mean(x1,2);
+    mean2 = mean(x2,2);
+    std1 = std(x1,1,2);
+    std2 = std(x2,1,2);
+    s1 = std1./sqrt(2);
+    s2 = std2./sqrt(2);
+    T1 = [s1(1), 0, -mean1(1);...
+          0, s1(2), -mean1(2);...
+          0, 0, 1];
+    T2 = [s2(1), 0, -mean2(1);...
+          0, s2(2), -mean2(2);...
+          0, 0, 1];
+    x1n = T1 * x1n;
+    x2n = T2 * x2n;
+    count = 1;
+    for i = 1:n_points
+        x1i = x1n(:,i);
+        x2i = x2n(:,i);
+        A = zeros(8,9);
+        A(count,:) = [0, 0, 0,...
+                     -x2i(3)*x1i(1), -x2i(3)*x1i(2), -x2i(3)*x1i(3), ...
+                      x2i(2).*x1i(1), x2i(2).*x1i(2), x2i(2).*x1i(3)];
+                  
+        A(count+1,:) = [x2i(3)*x1i(1), x2i(3)*x1i(2), x2i(3)*x1i(3), ...
+                        0, 0, 0,...
+                        x2i(1)*x1i(1),x2i(1)*x1i(2),x2i(1)*x1i(3)];
+        count = count + 2;
+    end
+    [~,~,V] = svd(A);
+    h = V(9,:);
+    homo = reshape(h,3,3);
+    homo = homo';
+    homo = T2\homo*T1;
