@@ -189,14 +189,13 @@ xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
 xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
 [Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000); 
 
-corners = [-450 1450 -150 1000];
+corners = [-400 1450 -100 1050];
 Hbb = eye(3);
 iwb = apply_H_v2(imbrgb, Hbb , corners);   
 iwa = apply_H_v2(imargb, Hab, corners);    
 iwc = apply_H_v2(imcrgb, inv(Hbc), corners);   
 
 figure;
-%image(max(iwc, max(iwb, iwa)));axis off;
 imshow(max(iwc, max(iwb, iwa)));
 title('Mosaic A-B-C');
 
