@@ -112,8 +112,8 @@ title('Mosaic A-B-C');
 
 % Homography ab
 
-x = ...;  %ToDo: set the non-homogeneous point coordinates of the 
-xp = ...; %      point correspondences we will refine with the geometric method
+x = points_a(1:2, matches_ab(1,inliers_ab));  %ToDo: set the non-homogeneous point coordinates of the 
+xp = points_b(1:2, matches_ab(2,inliers_ab)); %      point correspondences we will refine with the geometric method
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
@@ -138,6 +138,14 @@ fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err
 % ToDo: compute the points xhat and xhatp which are the correspondences
 % returned by the refinement with the Gold Standard algorithm
 
+xhat = P(10:end);
+xhat = reshape(xhat, [2,size(xhat,1)/2]); % from nx1 to 2x(n/2)
+xhat = [xhat ; ones(1,size(xhat,2))]; % from euclidean to homogeneous
+xhatp = Hab_r*xhat;
+
+xhat = euclid(xhat);
+xhatp = euclid(xhatp);
+
 figure;
 imshow(imargb);%image(imargb);
 hold on;
@@ -154,11 +162,38 @@ plot(xhatp(1,:), xhatp(2,:),'+c');
 
 % ToDo: refine the homography bc with the Gold Standard algorithm
 
+x = points_b(1:2, matches_bc(1,inliers_bc));  %ToDo: set the non-homogeneous point coordinates of the 
+xp = points_c(1:2, matches_bc(2,inliers_bc)); %      point correspondences we will refine with the geometric method
+Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
+P0 = [Hbc(:) ; x(:) ];      % The parameters or independent variables
+
+Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
+% NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
+% (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
+err_initial = sum( sum( Y_initial.^2 ));
+
+options = optimset('Algorithm', 'levenberg-marquardt');
+P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
+
+Hbc_r = reshape( P(1:9), 3, 3 );
+f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
+err_final = sum( sum( f.^2 ));
+
+% we show the geometric error before and after the refinement
+fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err_final);
 
 %% See differences in the keypoint locations
 
 % ToDo: compute the points xhat and xhatp which are the correspondences
 % returned by the refinement with the Gold Standard algorithm
+
+xhat = P(10:end);
+xhat = reshape(xhat, [2,size(xhat,1)/2]); % from nx1 to 2x(n/2)
+xhat = [xhat ; ones(1,size(xhat,2))]; % from euclidean to homogeneous
+xhatp = Hbc_r*xhat;
+
+xhat = euclid(xhat);
+xhatp = euclid(xhatp);
 
 figure;
 imshow(imbrgb);%image(imbrgb);
@@ -174,9 +209,9 @@ plot(xhatp(1,:), xhatp(2,:),'+c');
 
 %% Build mosaic
 corners = [-400 1200 -100 650];
-iwb = apply_H_v2(imbrgb, ??, corners); % ToDo: complete the call to the function
-iwa = apply_H_v2(imargb, ??, corners); % ToDo: complete the call to the function
-iwc = apply_H_v2(imcrgb, ??, corners); % ToDo: complete the call to the function
+iwb = apply_H_v2(imbrgb, eye(3), corners); % ToDo: complete the call to the function
+iwa = apply_H_v2(imargb, Hab_r, corners); % ToDo: complete the call to the function
+iwc = apply_H_v2(imcrgb, inv(Hbc_r), corners); % ToDo: complete the call to the function
 
 figure;
 imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
@@ -238,11 +273,11 @@ end
 
 %% Compute the Image of the Absolute Conic
 
-w = ... % ToDo
+%w = ... % ToDo
  
 %% Recover the camera calibration.
 
-K = ... % ToDo
+%K = ... % ToDo
     
 % ToDo: in the report make some comments related to the obtained internal
 %       camera parameters and also comment their relation to the image size
@@ -254,9 +289,9 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    r1 = ...
-    r2 = ...
-    t{i} = ...
+    %r1 = ...
+    %r2 = ...
+    %t{i} = ...
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
@@ -289,27 +324,27 @@ colormap(gray);
 axis equal;
 
 %% Plot a static camera with moving calibration pattern.
-figure; hold;
-plot_camera(K * eye(3,4), 800, 600, 200);
+% figure; hold;
+% plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
-for i = 1:N
-    vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
-end
+% for i = 1:N
+%     vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
+% end
 
 %% Augmented reality: Plot some 3D points on every camera.
-[Th, Tw] = size(Tg);
-cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
+%[Th, Tw] = size(Tg);
+%cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
 
-X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
+%X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
 
-for i = 1:N
-    figure; colormap(gray);
-    imagesc(Ig{i});
-    hold on;
-    x = euclid(P{i} * homog(X));
-    vgg_scatter_plot(x, 'g');
-end
+%for i = 1:N
+%     figure; colormap(gray);
+%     imagesc(Ig{i});
+%     hold on;
+%     x = euclid(P{i} * homog(X));
+%     vgg_scatter_plot(x, 'g');
+%end
 
 
 
