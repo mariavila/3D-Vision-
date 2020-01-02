@@ -16,14 +16,6 @@ ima = sum(double(imargb), 3) / 3 / 255;
 imb = sum(double(imbrgb), 3) / 3 / 255;
 imc = sum(double(imcrgb), 3) / 3 / 255;
 
-imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-
-ima = imargb;
-imb = imbrgb;
-imc = imcrgb;
-
 %% Compute SIFT keypoints
 [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
 [points_b, desc_b] = sift(imb, 'Threshold', 0.01);
@@ -412,10 +404,81 @@ end
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
 %%              DLT algorithm (folder "logos").
 %%              Interpret and comment the results.
+imrgb_building = imread('Data/logos/UPFbuilding.jpg');
+imrgb_stand = imread('Data/logos/UPFstand.jpg');
+imrgb_logo_upf = imread('Data/logos/logoUPF.png');
+
+im_building = sum(double(imrgb_building), 3) / 3 / 255;
+im_stand = sum(double(imrgb_stand), 3) / 3 / 255;
+im_logo_upf = sum(double(imrgb_logo_upf), 3) / 3 / 255;
+
+%Compute SIFT keypoints
+[points_building, desc_building] = sift(im_building, 'Threshold', 0.01);
+[points_stand, desc_stand] = sift(im_stand, 'Threshold', 0.01);
+[points_logo_upf, desc_logo_upf] = sift(im_logo_upf, 'Threshold', 0.01);
+
+%% Match SIFT keypoints 
+% between logo and building
+matches_logo_building = siftmatch(desc_logo_upf, desc_building);
+
+% between logo and stand
+matches_logo_stand = siftmatch(desc_logo_upf, desc_stand);
+
+%%Compute the homography using the DLT algorithm
+%Compute homography (normalized DLT) between logo and building
+th = 3;
+xlb_logo = [points_logo_upf(1:2, matches_logo_building(1,:)); ones(1, length(matches_logo_building))];
+xlb_building = [points_building(1:2, matches_logo_building(2,:)); ones(1, length(matches_logo_building))];
+[H_logo_building, inliers_lb] = ransac_homography_adaptive_loop(xlb_logo, xlb_building, th, 1000);
+
+%Compute homography (normalized DLT) between logo and stand
+th = 3;
+xls_logo = [points_logo_upf(1:2, matches_logo_stand(1,:)); ones(1, length(matches_logo_stand))];
+xls_stand = [points_stand(1:2, matches_logo_stand(2,:)); ones(1, length(matches_logo_stand))];
+[H_logo_stand, inliers_ls] = ransac_homography_adaptive_loop(xls_logo, xls_stand, th, 1000);
+
+
+%%Show logo location
+[sy, sx, ~] = size(im_logo_upf);
+corners = [0 sx sx 0; 0 0 sy sy];
+x = [corners ; ones(1,4)];
+
+%In building image 
+corners_building = H_logo_building * x;
+corners_building = corners_building(1:2, :) ./ repmat(corners_building(3,:),2,1);
+figure;
+imshow(imrgb_building);
+hold on;
+line([corners_building(1,:) corners_building(1,1)], [corners_building(2,:) corners_building(2,1)], 'color', 'y', 'LineWidth', 2);
+
+%In stand image 
+corners_stand = H_logo_stand * x;
+corners_stand = corners_stand(1:2, :) ./ repmat(corners_stand(3,:),2,1);
+figure;
+imshow(imrgb_stand);
+hold on;
+line([corners_stand(1,:) corners_stand(1,1)], [corners_stand(2,:) corners_stand(2,1)], 'color', 'y', 'LineWidth', 2);
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. OPTIONAL: Replace the logo of the UPF by the master logo
 %%              in one of the previous images using the DLT algorithm.
+imrgb_logo_master = imread('Data/logos/logo_master.png');
+im_logo_master = sum(double(imrgb_logo_master), 3) / 3 / 255;
+
+[sy, sx, ~] = size(imrgb_stand);
+corners = [0 sx 0 sy];
+imt_master = apply_H_v2(imrgb_logo_master, H_logo_stand, corners); 
+Hss = eye(3);  
+imt_stand = apply_H_v2(imrgb_stand, Hss, corners);
+figure;
+imshow(max(imt_stand, imt_master));
+%imshow(imt_stand);
+%hold on;
+%imshow(imt_master);
+
+
 
 
 
