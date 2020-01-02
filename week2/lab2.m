@@ -201,6 +201,8 @@ title('Mosaic A-B-C');
 
 x = points_a(1:2, matches_ab(1,inliers_ab));  %ToDo: set the non-homogeneous point coordinates of the 
 xp = points_b(1:2, matches_ab(2,inliers_ab)); %      point correspondences we will refine with the geometric method
+% x = [points_a(1:2, matches_ab(1,inliers_ab)); ones(1, length(matches_ab(1,inliers_ab)))];
+% xp = [points_b(1:2, matches_ab(2,inliers_ab)); ones(1, length(matches_ab(1,inliers_ab)))];
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
@@ -295,11 +297,11 @@ plot(xp(1,:), xp(2,:),'+y');
 plot(xhatp(1,:), xhatp(2,:),'+c');
 
 %% Build mosaic
-corners = [-400 1200 -100 650];
+corners = [-400 1450 -100 1050];
 iwb = apply_H_v2(imbrgb, eye(3), corners); % ToDo: complete the call to the function
 iwa = apply_H_v2(imargb, Hab_r, corners); % ToDo: complete the call to the function
 iwc = apply_H_v2(imcrgb, inv(Hbc_r), corners); % ToDo: complete the call to the function
-
+% iwc = zeros(size(iwc), 'uint8');
 figure;
 imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
 title('Mosaic A-B-C');
@@ -346,26 +348,49 @@ for i = 1:N
 
     % Fit homography and remove outliers.
     x1 = pointsT(1:2, matches(1, :));
+    x1 = [x1;ones(1,size(x1,2))];
     x2 = points{i}(1:2, matches(2, :));
+    x2 = [x2;ones(1,size(x2,2))];
     H{i} = 0;
-    [H{i}, inliers] =  ransac_homography_adaptive_loop(homog(x1), homog(x2), 3, 1000);
-
+%     [H{i}, inliers] =  ransac_homography_adaptive_loop(homog(x1), homog(x2), 3, 1000);
+    [H{i}, inliers] =  ransac_homography_adaptive_loop(x1, x2, 3, 1000);
     % Plot inliers.
     figure;
     plotmatches(Tg, Ig{i}, pointsT(1:2,:), points{i}(1:2,:), matches(:, inliers));
 
-    % Play with the homography
-    %vgg_gui_H(T, I{i}, H{i});
+%     Play with the homography
+%     vgg_gui_H(T, I{i}, H{i});
 end
 
 %% Compute the Image of the Absolute Conic
-
-%w = ... % ToDo
+n_ims = size(I,2);
+vij = zeros(2*n_ims,6);
+count = 1;
+for i = 1:n_ims
+    %v_12
+    A(count,:) = [H{i}(1,1)*H{i}(1,2), H{i}(1,1)*H{i}(2,2)+H{i}(2,1)*H{i}(1,2),...
+                  H{i}(1,1)*H{i}(3,2)+H{i}(3,1)*H{i}(1,2), H{i}(2,1)*H{i}(2,2),...
+                  H{i}(2,1)*H{i}(3,2)+H{i}(3,1)*H{i}(2,2), H{i}(3,1)*H{i}(3,2)];
+    %v_11
+    v_11 = [H{i}(1,1)*H{i}(1,1), H{i}(1,1)*H{i}(2,1)+H{i}(2,1)*H{i}(1,1),...
+                  H{i}(1,1)*H{i}(3,1)+H{i}(3,1)*H{i}(1,1), H{i}(2,1)*H{i}(2,1),...
+                  H{i}(2,1)*H{i}(3,1)+H{i}(3,1)*H{i}(2,1), H{i}(3,1)*H{i}(3,1)];
+    %v_22
+    v_22 = [H{i}(1,2)*H{i}(1,2), H{i}(1,2)*H{i}(2,2)+H{i}(2,2)*H{i}(1,2),...
+                  H{i}(1,2)*H{i}(3,2)+H{i}(3,2)*H{i}(1,2), H{i}(2,2)*H{i}(2,2),...
+                  H{i}(2,2)*H{i}(3,2)+H{i}(3,2)*H{i}(2,2), H{i}(3,2)*H{i}(3,2)];
+              
+    %v_11-v_22
+    A(count+1,:) = v_11-v_22;
+    count = count + 2;
+end
+[~,~,V] = svd(A);
+X = V(:,end);
+w = [X(1), X(2), X(3); X(1), X(4), X(5); X(3), X(5), X(6)]; % ToDo
  
 %% Recover the camera calibration.
 
-%K = ... % ToDo
-    
+K = inv(chol(w)); % ToDo
 % ToDo: in the report make some comments related to the obtained internal
 %       camera parameters and also comment their relation to the image size
 
