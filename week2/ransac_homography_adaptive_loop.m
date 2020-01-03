@@ -44,13 +44,20 @@ function idx_inliers = compute_inliers(H, x1, x2, th)
     % compute the symmetric geometric error
     n_points = size(x1);
     n_points = n_points(2);
-    for i = 1:n_points
-        x1p = H*x1(:,i);
-        x2p = inv(H)*x2(:,i);
-        d2_1 = (x1(1,i)/x1(3,i) - x2p(1)/x2p(3))^2+(x1(2,i)/x1(3,i) - x2p(2)/x2p(3))^2;
-        d2_2 = (x2(1,i)/x2(3,i) - x1p(1)/x1p(3))^2+(x2(2,i)/x2(3,i) - x1p(2)/x1p(3))^2;
-        d2(i) =(d2_1 + d2_2);  
-    end
+    x1p = H*x1;
+    x1p = x1p./x1p(3,:);
+    x1 = x1./x1(3,:);
+    x2p = inv(H)*x2;    
+    x2p = x2p./x2p(3,:);
+    x2 = x2./x2(3,:);
+    d2 = sum((x1(1:2,:)-x2p(1:2,:)).^2, 1) + sum((x2(1:2,:)-x1p(1:2,:)).^2, 1);
+%     for i = 1:n_points
+%         x1p = H*x1(:,i);
+%         x2p = inv(H)*x2(:,i);
+%         d2_1 = (x1(1,i)/x1(3,i) - x2p(1)/x2p(3))^2+(x1(2,i)/x1(3,i) - x2p(2)/x2p(3))^2;
+%         d2_2 = (x2(1,i)/x2(3,i) - x1p(1)/x1p(3))^2+(x2(2,i)/x2(3,i) - x1p(2)/x1p(3))^2;
+%         d2(i) =(d2_1 + d2_2);  
+%     end
     idx_inliers = find(d2 < th.^2);
     
 
@@ -86,10 +93,8 @@ function homo = homography2d(x1,x2)
     T2 = [s2(1), 0, -mean2(1);...
           0, s2(2), -mean2(2);...
           0, 0, 1];
-    x1p = T1 * x1p;
-    x2p = T2 * x2p;
-    x1n = x1p;
-    x2n = x2p;
+    x1n = T1 * x1p;
+    x2n = T2 * x2p;
     count = 1;
     A = zeros(2*n_points,9);
     for i = 1:n_points
