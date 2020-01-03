@@ -42,8 +42,6 @@ function idx_inliers = compute_inliers(H, x1, x2, th)
     
 
     % compute the symmetric geometric error
-    n_points = size(x1);
-    n_points = n_points(2);
     x1p = H*x1;
     x1p = x1p./x1p(3,:);
     x1 = x1./x1(3,:);
