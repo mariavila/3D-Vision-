@@ -15,5 +15,5 @@ function [ diff ] = gs_errfunction( P0, Xobs )
     xhat = xhat./xhat(3,:);
     xhatp = inv(H)*x2;
     xhatp = xhatp./xhatp(3,:);
-    diff = sqrt(sum(x1(1:2,:)-xhatp(1:2,:)).^2 + sum(x2(1:2,:)-xhat(1:2,:)).^2);
+    diff = sqrt(sum((x1(1:2,:)-xhatp(1:2,:)).^2,1) + sum((x2(1:2,:)-xhat(1:2,:)).^2,1));
 end
