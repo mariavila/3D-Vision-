@@ -1,4 +1,4 @@
-function [ diff ] = gs_errfunction( P0, Xobs )
+function [ diff ] = gs_errfunction_v2( P0, Xobs )
 
     % First get the H matrix
     H = reshape(P0(1:9), [3,3]);
@@ -15,5 +15,5 @@ function [ diff ] = gs_errfunction( P0, Xobs )
     xhat = xhat./xhat(3,:);
     xhatp = inv(H)*x2;
     xhatp = xhatp./xhatp(3,:);
-    diff = sqrt(sum((x1(1:2,:)-xhatp(1:2,:)).^2,1) + sum((x2(1:2,:)-xhat(1:2,:)).^2,1));
+    diff = sqrt(sum((x1(1:2,:)-xhatp(1:2,:)).^2,1)) + sqrt(sum((x2(1:2,:)-xhat(1:2,:)).^2,1));
 end

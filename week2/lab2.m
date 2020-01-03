@@ -206,13 +206,13 @@ xp = points_b(1:2, matches_ab(2,inliers_ab)); %      point correspondences we wi
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
-Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
+Y_initial = gs_errfunction_v2( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
 % NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
 % (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
 err_initial = sum( sum( Y_initial.^2 ));
 
 options = optimset('Algorithm', 'levenberg-marquardt');
-P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
+P = lsqnonlin(@(t) gs_errfunction_v2(t, Xobs), P0, [], [], options);
 
 Hab_r = reshape( P(1:9), 3, 3 );
 f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
@@ -221,6 +221,7 @@ err_final = sum( sum( f.^2 ));
 % we show the geometric error before and after the refinement
 fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err_final);
 
+vgg_gui_H(imargb, imbrgb, Hab_r);
 
 %% See differences in the keypoint locations
 
@@ -236,13 +237,13 @@ xhat = euclid(xhat);
 xhatp = euclid(xhatp);
 
 figure;
-imshow(imargb);%image(imargb);
+imshow(imargb, []);%image(imargb);
 hold on;
 plot(x(1,:), x(2,:),'+y');
 plot(xhat(1,:), xhat(2,:),'+c');
 
 figure;
-imshow(imbrgb);%image(imbrgb);
+imshow(imbrgb, []);%image(imbrgb);
 hold on;
 plot(xp(1,:), xp(2,:),'+y');
 plot(xhatp(1,:), xhatp(2,:),'+c');
@@ -256,20 +257,23 @@ xp = points_c(1:2, matches_bc(2,inliers_bc)); %      point correspondences we wi
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [Hbc(:) ; x(:) ];      % The parameters or independent variables
 
-Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
+Y_initial = gs_errfunction_v2( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
 % NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
 % (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
 err_initial = sum( sum( Y_initial.^2 ));
 
 options = optimset('Algorithm', 'levenberg-marquardt');
-P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
+P = lsqnonlin(@(t) gs_errfunction_v2(t, Xobs), P0, [], [], options);
 
 Hbc_r = reshape( P(1:9), 3, 3 );
-f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
+f = gs_errfunction_v2( P, Xobs ); % lsqnonlin does not return f
 err_final = sum( sum( f.^2 ));
 
 % we show the geometric error before and after the refinement
 fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err_final);
+
+vgg_gui_H(imbrgb, imcrgb, Hbc_r);
+
 
 %% See differences in the keypoint locations
 
@@ -285,13 +289,13 @@ xhat = euclid(xhat);
 xhatp = euclid(xhatp);
 
 figure;
-imshow(imbrgb);%image(imbrgb);
+imshow(imbrgb, []);%image(imbrgb);
 hold on;
 plot(x(1,:), x(2,:),'+y');
 plot(xhat(1,:), xhat(2,:),'+c');
 
 figure;
-imshow(imcrgb);%image(imcrgb);
+imshow(imcrgb, []);%image(imcrgb);
 hold on;
 plot(xp(1,:), xp(2,:),'+y');
 plot(xhatp(1,:), xhatp(2,:),'+c');
@@ -303,7 +307,7 @@ iwa = apply_H_v2(imargb, Hab_r, corners); % ToDo: complete the call to the funct
 iwc = apply_H_v2(imcrgb, inv(Hbc_r), corners); % ToDo: complete the call to the function
 % iwc = zeros(size(iwc), 'uint8');
 figure;
-imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
+imshow(max(iwc, max(iwb, iwa)), []);%image(max(iwc, max(iwb, iwa)));axis off;
 title('Mosaic A-B-C');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -527,9 +531,14 @@ line([corners_stand(1,:) corners_stand(1,1)], [corners_stand(2,:) corners_stand(
 imrgb_logo_master = imread('Data/logos/logo_master.png');
 im_logo_master = sum(double(imrgb_logo_master), 3) / 3 / 255;
 
-[sy, sx, ~] = size(imrgb_stand);
+[sy, sx, ~] = size(im_logo_master);
+[sy2, sx2, ~] = size(im_logo_upf);
+
+scale = [sx2/sx 0 0; 0 sy2/sy 0; 0 0 1];
+H = H_logo_stand * scale;
+
 corners = [0 sx 0 sy];
-imt_master = apply_H_v2(imrgb_logo_master, H_logo_stand, corners); 
+imt_master = apply_H_v2(imrgb_logo_master, H, corners); 
 Hss = eye(3);  
 imt_stand = apply_H_v2(imrgb_stand, Hss, corners);
 figure;
