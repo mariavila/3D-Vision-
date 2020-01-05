@@ -77,6 +77,7 @@ vgg_gui_H(imbrgb, imcrgb, Hbc);
 %% 3. Build the mosaic
 
 corners = [-400 1200 -100 650];
+%corners = [-540 1180 -190 630];
 Hbb = eye(3);
 iwb = apply_H_v2(imbrgb, Hbb , corners);   % ToDo: complete the call to the function
 iwa = apply_H_v2(imargb, Hab, corners);    % ToDo: complete the call to the function
@@ -418,11 +419,11 @@ for i = 1:n_ims
 end
 [~,~,V] = svd(A);
 X = V(:,end);
-w = [X(1), X(2), X(3); X(1), X(4), X(5); X(3), X(5), X(6)]; % ToDo
+w = [X(1), X(2), X(3); X(2), X(4), X(5); X(3), X(5), X(6)]; % ToDo
  
 %% Recover the camera calibration.
 
-K = inv(chol(w)); % ToDo
+K = chol(inv(w)); % ToDo
 % ToDo: in the report make some comments related to the obtained internal
 %       camera parameters and also comment their relation to the image size
 
@@ -433,10 +434,13 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    %r1 = ...
-    %r2 = ...
-    %t{i} = ...
-    
+    inv_K = inv(K);
+%     r1 = (inv_K*H{i}(:,1))/norm(inv_K*H{i}(:,1));
+%     r2 = (inv_K*H{i}(:,2))/norm(inv_K*H{i}(:,2));
+%     t{i} = (inv_K*H{i}(:,3))/norm(inv_K*H{i}(:,3));
+    r1 = (inv_K*H{i}(:,1));
+    r2 = (inv_K*H{i}(:,2));
+    t{i} = (inv_K*H{i}(:,3));    
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
     r1 = r1 / s;
@@ -445,7 +449,7 @@ for i = 1:N
     R{i} = [r1, r2, cross(r1,r2)];
     
     % Ensure R is a rotation matrix
-    [U S V] = svd(R{i});
+    [U, S, V] = svd(R{i});
     R{i} = U * eye(3) * V';
    
     P{i} = K * [R{i} t{i}];
@@ -455,7 +459,7 @@ end
 % ToDo: in the report explain how the optical center is computed in the
 %       provided code
 
-[ny,nx] = size(T);
+[ny,nx,~] = size(T);
 p1 = [0 0 0]';
 p2 = [nx 0 0]';
 p3 = [nx ny 0]';
@@ -468,29 +472,29 @@ colormap(gray);
 axis equal;
 
 %% Plot a static camera with moving calibration pattern.
-% figure; hold;
-% plot_camera(K * eye(3,4), 800, 600, 200);
+figure; hold;
+plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
-% for i = 1:N
-%     vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
-% end
+p = [p1 p2 p3 p4 p1];
+for i = 1:N
+    pp = [R{i} t{i}]*[p; ones(1,5)]; % P in homogeneous 3D coordinates
+    vgg_scatter_plot( pp, 'r');
+end
 
 %% Augmented reality: Plot some 3D points on every camera.
-%[Th, Tw] = size(Tg);
-%cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
+[Th, Tw] = size(Tg);
+cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
 
-%X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
-
-%for i = 1:N
-%     figure; colormap(gray);
-%     imagesc(Ig{i});
-%     hold on;
-%     x = euclid(P{i} * homog(X));
-%     vgg_scatter_plot(x, 'g');
-%end
-
-
+X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
+X = [X; ones(1, size(X, 2))];
+for i = 1:N
+    figure; colormap(gray);
+    imagesc(Ig{i});
+    hold on;
+    x = euclid(P{i} * X);
+    vgg_scatter_plot(x, 'g');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
