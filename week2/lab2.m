@@ -85,6 +85,10 @@ iwc = apply_H_v2(imcrgb, inv(Hbc), corners);    % ToDo: complete the call to the
 figure;
 imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
 title('Mosaic A-B-C');
+% DISCUSSION: In this case the method to build the panorama works 
+% because we can assume the camera that took the images is static 
+% as the scene is far from the camera. For each image the camera 
+% only changes the rotation.
 
 % ToDo: compute the mosaic with castle_int images
 imargb = imread('Data/castle_int/0016_s.png');
@@ -120,6 +124,11 @@ iwc = apply_H_v2(imcrgb, inv(Hbc), corners);
 figure;
 imshow(max(iwc, max(iwb, iwa)));
 title('Mosaic A-B-C');
+% DISCUSSION: in this case the tractor that appears on images ABC
+% is impossible to reconstruct after the transformations. It is 
+% because it is very close to the camera and we have occlusions 
+% which makes it impossible to be matched. The facade on the other
+% hand can be built into a mosaic as it fulfills the conditions.
 
 % ToDo: compute the mosaic with aerial images set 13
 imargb = imread('Data/aerial/site13/frame00000.png');
@@ -156,6 +165,15 @@ figure;
 imshow(max(iwc, max(iwb, iwa)));
 title('Mosaic A-B-C');
 
+% DISCUSSION: see that the inferior left corner of the result 
+% image is a little sloppy. We have studied why it might be 
+% and for some reason the ransac discards the matches in that 
+% zone so there the homography is not exact and the result image
+% gives this double building effect in that zone. We think it might 
+% be something similar to the case of the tractor but less severe. 
+% This case might be in the limit of a good performance of the method.
+% See the document to see the images that ilustrate the discussion.
+
 % ToDo: compute the mosaic with aerial images set 22
 imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
 imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
@@ -190,6 +208,16 @@ iwc = apply_H_v2(imcrgb, inv(Hbc), corners);
 figure;
 imshow(max(iwc, max(iwb, iwa)));
 title('Mosaic A-B-C');
+
+% DISCUSSION: between images the camera has clearly changed the position 
+% and it is the main hypothesis in order for this method to work. That
+% is why the result cannot build the mosaic properly. For the objects
+% closer to the ground (streets, roads, the river,...) the camera is very 
+% far from them and we can assume we have an static camera and they are 
+% correctly transformed so they match. Also mention that it takes quite a 
+% long time to calculate this mosaic and we think that is because of the 
+% lack of correct matches and it takes longer for the RANSAC to compute.
+% See the document to see the images that ilustrate the discussion.
 
 % ToDo: comment the results in every of the four cases: hypothetise why it works or
 %       does not work
@@ -546,7 +574,6 @@ imshow(max(imt_stand, imt_master));
 %imshow(imt_stand);
 %hold on;
 %imshow(imt_master);
-
 
 
 
