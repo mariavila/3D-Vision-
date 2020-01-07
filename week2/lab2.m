@@ -244,7 +244,7 @@ options = optimset('Algorithm', 'levenberg-marquardt');
 P = lsqnonlin(@(t) gs_errfunction_v2(t, Xobs), P0, [], [], options);
 
 Hab_r = reshape( P(1:9), 3, 3 );
-f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
+f = gs_errfunction_v2( P, Xobs ); % lsqnonlin does not return f
 err_final = sum( sum( f.^2 ));
 
 % we show the geometric error before and after the refinement
