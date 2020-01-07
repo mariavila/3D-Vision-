@@ -349,12 +349,14 @@ T     = imread('Data/calib/template.jpg');
 I{1}  = imread('Data/calib/graffiti1.tif');
 I{2}  = imread('Data/calib/graffiti2.tif');
 I{3}  = imread('Data/calib/graffiti3.tif');
-%I{4}  = imread('Data/calib/graffiti4.tif');
-%I{5}  = imread('Data/calib/graffiti5.tif');
+I{4}  = imread('Data/calib/graffiti4.tif');
+I{5}  = imread('Data/calib/graffiti5.tif');
 Tg = sum(double(T), 3) / 3 / 255;
 Ig{1} = sum(double(I{1}), 3) / 3 / 255;
 Ig{2} = sum(double(I{2}), 3) / 3 / 255;
 Ig{3} = sum(double(I{3}), 3) / 3 / 255;
+Ig{4} = sum(double(I{4}), 3) / 3 / 255;
+Ig{5} = sum(double(I{5}), 3) / 3 / 255;
 
 N = length(I);
 
