@@ -248,3 +248,145 @@ plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*');
 %     Photo-sequencing paper with a selection of the detected dynamic
 %     features. You may reuse the code generated for the previous question.
 %
+
+clear all;
+
+% Read images
+im1rgb = imread('Data/pencil4.JPG');
+im2rgb = imread('Data/pencil3.JPG');
+im3rgb = imread('Data/pencil2.JPG');
+im4rgb = imread('Data/pencil1.JPG');
+
+im1rgb = imresize(im1rgb, 0.2);
+im2rgb = imresize(im2rgb, 0.2);
+im3rgb = imresize(im3rgb, 0.2);
+im4rgb = imresize(im4rgb, 0.2);
+
+im1 = sum(double(im1rgb), 3) / 3 / 255;
+im2 = sum(double(im2rgb), 3) / 3 / 255;
+im3 = sum(double(im3rgb), 3) / 3 / 255;
+im4 = sum(double(im4rgb), 3) / 3 / 255;
+
+% show images
+figure;
+subplot(2,2,1); imshow(im1rgb); axis image; title('Image 1');
+subplot(2,2,2); imshow(im2rgb); axis image; title('Image 2');
+subplot(2,2,3); imshow(im3rgb); axis image; title('Image 3');
+subplot(2,2,4); imshow(im4rgb); axis image; title('Image 4');
+
+% Compute SIFT keypoints
+[points_1, desc_1] = sift(im1, 'Threshold', 0.015); % Do not change this threshold!
+[points_2, desc_2] = sift(im2, 'Threshold', 0.015);
+[points_3, desc_3] = sift(im3, 'Threshold', 0.015);
+[points_4, desc_4] = sift(im4, 'Threshold', 0.015);
+
+%Matches between images
+matches1_2 = siftmatch(desc_1, desc_2);
+matches1_3 = siftmatch(desc_1, desc_3);
+matches1_4 = siftmatch(desc_1, desc_4);
+
+figure;
+plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches1_2, 'Stacking', 'v');
+
+figure;
+plotmatches(im1, im3, points_1(1:2,:), points_3(1:2,:), matches1_3, 'Stacking', 'v');
+
+figure;
+plotmatches(im1, im4, points_1(1:2,:), points_4(1:2,:), matches1_4, 'Stacking', 'v');
+
+p1_12 = [points_1(1:2, matches1_2(1,:)); ones(1, length(matches1_2))];
+p2_12 = [points_2(1:2, matches1_2(2,:)); ones(1, length(matches1_2))];
+
+p1_13 = [points_1(1:2, matches1_3(1,:)); ones(1, length(matches1_3))];
+p2_13 = [points_3(1:2, matches1_3(2,:)); ones(1, length(matches1_3))];
+
+p1_14 = [points_1(1:2, matches1_4(1,:)); ones(1, length(matches1_4))];
+p2_14 = [points_4(1:2, matches1_4(2,:)); ones(1, length(matches1_4))];
+
+%Find static and dynamic points and compute fundamental matrix between
+%images
+[ fD1 , fS1 , fD2 , fS2] = Classify_Dyn_Stat_Ref( p1_12, p2_12);
+
+[F1_2, inliers_12] = ransac_fundamental_matrix(fS1, fS2, 2.0);
+
+[ fD1_13 , fS1_13 , fD3_13 , fS3_13] = Classify_Dyn_Stat_Ref( p1_13, p2_13);
+
+[F1_3, inliers_13] = ransac_fundamental_matrix(fS1_13, fS3_13, 2.0);
+
+[ fD1_14 , fS1_14 , fD4_14 , fS4_14] = Classify_Dyn_Stat_Ref( p1_14, p2_14);
+
+[F1_4, inliers_14] = ransac_fundamental_matrix(fS1_14, fS4_14, 2.0);
+
+%[ fD3 , fS3] = Classify_Dyn_Stat( fS1 , fD1 , p1_13, p2_13);
+
+%[F1_3, inliers_13] = ransac_fundamental_matrix(fS1, fS3, 2.0); 
+
+%[ fD4 , fS4] = Classify_Dyn_Stat( fS1 , fD1 , p2_14);
+
+%[F1_4, inliers_14] = ransac_fundamental_matrix(fS1, fS4, 2.0); 
+
+%Find the moving points
+figure;imshow(im1);
+hold on;
+% 67 68 144 145 177 193 194 248 !!282!! 283 284 331 332
+p1 = p1_12(:, 331);
+plot(p1(1)/p1(3), p1(2)/p1(3), 'c*');
+p1 = p1_12(:, 332);
+plot(p1(1)/p1(3), p1(2)/p1(3), 'r*');
+p1 = p1_12(:, 312);
+plot(p1(1)/p1(3), p1(2)/p1(3), 'g*');
+
+
+% Plot the pen trajectory (keypoint idx_pen_I1 in image 1)
+idx_pen_I1 = 248; 
+idx_pen_I2 = matches1_2(2,matches1_2(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 2
+idx_pen_I3 = matches1_3(2,matches1_3(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 3
+idx_pen_I4 = matches1_4(2,matches1_4(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 4
+
+% coordinates (in image 1) of the keypoint idx_pen_I1 (point in a van). 
+% point1_1 is the projection of a 3D point in the 3D trajectory of the van
+point1_1 = [points_1(1:2,idx_pen_I1)' 1]';
+% coordinates (in image 1) of another 3D point in the same 3D trajectory of
+% the van
+point1_2 = [points_2(1:2,idx_pen_I2)' 1]'; 
+
+figure;imshow(im1);
+hold on;
+plot(p1_12(1,idx_pen_I1), p1_12(2,idx_pen_I1), 'y*');
+plot(p2_12(1,idx_pen_I2), p2_12(2,idx_pen_I2), 'g*');
+
+% l1 is the projection of the 3D trajectory of keypoint idx_pen_I1
+% (it is the line that joins point1_1 and point1_2)
+l1 = cross(point1_1, point1_2);% ToDo: compute the line
+% plot the line
+figure;imshow(im1);
+hold on;
+t=1:0.1:1000;
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+plot(p1_12(1,idx_pen_I1), p1_12(2,idx_pen_I1), 'y*');
+
+% ToDo: write the homogeneous coordinates of the corresponding point of idx_pen_I1 in image 3
+point3 = [points_3(1:2,idx_pen_I3)' 1]';
+% ToDo: compute the epipolar line of point3 in the reference image
+l3 = F1_3' * point3;%
+% plot the epipolar line
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'b');
+% ToDo: compute the projection of point idx_pen_I3 in the reference image
+pi3 = cross(l1,l3);
+plot(pi3(1)/pi3(3), pi3(2)/pi3(3), 'b*');
+
+% ToDo: write the homogeneous coordinates of the corresponding point of idx_pen_I1 in image 4
+point4 = [points_4(1:2,idx_pen_I4)' 1]';
+% ToDo: compute the epipolar line of point4 in the reference image
+l4 = F1_4' * point4;%
+% plot the epipolar line
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'g');
+% ToDo: compute the projection of point idx_pen_I4 in the reference image
+pi4 = cross(l1,l4);
+plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*');
+
+figure;imshow(im3);
+hold on;
+% 85 142 143 !!185!!
+p1 = points_3(:, 211);
+plot(p1(1)/p1(3), p1(2)/p1(3), 'c*');
