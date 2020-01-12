@@ -1,6 +1,6 @@
 function [ fD1 , fS1 , fD2 , fS2] = Classify_Dyn_Stat_Ref( f1, f2)
-    dif = CalcDistance(f1, f2)
-    idx_dyn = find(dif>=130&dif<200)
+    dif = CalcDistance(f1, f2);
+    idx_dyn = find(dif>=130&dif<200);
     fD1 = f1(:, idx_dyn);
     fD2 = f2(:, idx_dyn);
     idx_stat = find(dif<130);

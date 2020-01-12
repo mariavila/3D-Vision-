@@ -286,8 +286,7 @@ matches1_3 = siftmatch(desc_1, desc_3);
 matches1_4 = siftmatch(desc_1, desc_4);
 
 figure;
-plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches1_2(:,331), 'Stacking', 'v');
-
+plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches1_2, 'Stacking', 'v');
 
 figure;
 plotmatches(im1, im3, points_1(1:2,:), points_3(1:2,:), matches1_3, 'Stacking', 'v');
@@ -318,37 +317,16 @@ p2_14 = [points_4(1:2, matches1_4(2,:)); ones(1, length(matches1_4))];
 
 [F1_4, inliers_14] = ransac_fundamental_matrix(fS1_14, fS4_14, 2.0);
 
-%[ fD3 , fS3] = Classify_Dyn_Stat( fS1 , fD1 , p1_13, p2_13);
-
-%[F1_3, inliers_13] = ransac_fundamental_matrix(fS1, fS3, 2.0); 
-
-%[ fD4 , fS4] = Classify_Dyn_Stat( fS1 , fD1 , p2_14);
-
-%[F1_4, inliers_14] = ransac_fundamental_matrix(fS1, fS4, 2.0); 
-
-%Find the moving points
-figure;imshow(im1);
-hold on;
-% 67 68 144 145 177 193 194 248 !!282!! 283 284 331 332
-p1 = p1_12(:, 281);
-plot(p1(1)/p1(3), p1(2)/p1(3), 'c*');
-p1 = p1_12(:, 282);
-plot(p1(1)/p1(3), p1(2)/p1(3), 'r*');
-p1 = p1_12(:, 283);
-plot(p1(1)/p1(3), p1(2)/p1(3), 'g*');
-
-
 % Plot the pen trajectory (keypoint idx_pen_I1 in image 1)
-idx_pen_I1 = 281; 
+idx_pen_I1 = 331; 
 idx_pen_I2 = idx_pen_I1; % ToDo: identify the corresponding point of idx_pen_I1 in image 2
 idx_pen_I3 = matches1_3(2,p1_13(1,:)==p1_12(1,idx_pen_I1)); % ToDo: identify the corresponding point of idx_pen_I1 in image 3
 idx_pen_I4 = matches1_4(2,p1_14(1,:)==p1_12(1,idx_pen_I1)); % ToDo: identify the corresponding point of idx_pen_I1 in image 4
 
-% coordinates (in image 1) of the keypoint idx_pen_I1 (point in a van). 
-% point1_1 is the projection of a 3D point in the 3D trajectory of the van
+% coordinates (in image 1) of the keypoint idx_pen_I1 (point in a pen). 
+% point1_1 is the projection of a 3D point in the 3D trajectory of the pen
 point1_1 = [p1_12(1:2,idx_pen_I1)' 1]';
-% coordinates (in image 1) of another 3D point in the same 3D trajectory of
-% the van
+% coordinates of the keypoint idx_pen_I1 in image2
 point1_2 = [p2_12(1:2,idx_pen_I1)' 1]'; 
 
 figure;imshow(im2);
