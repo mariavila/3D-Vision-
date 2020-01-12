@@ -286,7 +286,8 @@ matches1_3 = siftmatch(desc_1, desc_3);
 matches1_4 = siftmatch(desc_1, desc_4);
 
 figure;
-plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches1_2, 'Stacking', 'v');
+plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches1_2(:,331), 'Stacking', 'v');
+
 
 figure;
 plotmatches(im1, im3, points_1(1:2,:), points_3(1:2,:), matches1_3, 'Stacking', 'v');
@@ -329,31 +330,31 @@ p2_14 = [points_4(1:2, matches1_4(2,:)); ones(1, length(matches1_4))];
 figure;imshow(im1);
 hold on;
 % 67 68 144 145 177 193 194 248 !!282!! 283 284 331 332
-p1 = p1_12(:, 331);
+p1 = p1_12(:, 281);
 plot(p1(1)/p1(3), p1(2)/p1(3), 'c*');
-p1 = p1_12(:, 332);
+p1 = p1_12(:, 282);
 plot(p1(1)/p1(3), p1(2)/p1(3), 'r*');
-p1 = p1_12(:, 312);
+p1 = p1_12(:, 283);
 plot(p1(1)/p1(3), p1(2)/p1(3), 'g*');
 
 
 % Plot the pen trajectory (keypoint idx_pen_I1 in image 1)
-idx_pen_I1 = 248; 
-idx_pen_I2 = matches1_2(2,matches1_2(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 2
-idx_pen_I3 = matches1_3(2,matches1_3(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 3
-idx_pen_I4 = matches1_4(2,matches1_4(1,:)==idx_pen_I1); % ToDo: identify the corresponding point of idx_pen_I1 in image 4
+idx_pen_I1 = 281; 
+idx_pen_I2 = idx_pen_I1; % ToDo: identify the corresponding point of idx_pen_I1 in image 2
+idx_pen_I3 = matches1_3(2,p1_13(1,:)==p1_12(1,idx_pen_I1)); % ToDo: identify the corresponding point of idx_pen_I1 in image 3
+idx_pen_I4 = matches1_4(2,p1_14(1,:)==p1_12(1,idx_pen_I1)); % ToDo: identify the corresponding point of idx_pen_I1 in image 4
 
 % coordinates (in image 1) of the keypoint idx_pen_I1 (point in a van). 
 % point1_1 is the projection of a 3D point in the 3D trajectory of the van
-point1_1 = [points_1(1:2,idx_pen_I1)' 1]';
+point1_1 = [p1_12(1:2,idx_pen_I1)' 1]';
 % coordinates (in image 1) of another 3D point in the same 3D trajectory of
 % the van
-point1_2 = [points_2(1:2,idx_pen_I2)' 1]'; 
+point1_2 = [p2_12(1:2,idx_pen_I1)' 1]'; 
 
-figure;imshow(im1);
+figure;imshow(im2);
 hold on;
 plot(p1_12(1,idx_pen_I1), p1_12(2,idx_pen_I1), 'y*');
-plot(p2_12(1,idx_pen_I2), p2_12(2,idx_pen_I2), 'g*');
+plot(p2_12(1,idx_pen_I1), p2_12(2,idx_pen_I1), 'g*');
 
 % l1 is the projection of the 3D trajectory of keypoint idx_pen_I1
 % (it is the line that joins point1_1 and point1_2)
@@ -364,6 +365,7 @@ hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
 plot(p1_12(1,idx_pen_I1), p1_12(2,idx_pen_I1), 'y*');
+plot(p2_12(1,idx_pen_I1), p2_12(2,idx_pen_I1), 'g*');
 
 % ToDo: write the homogeneous coordinates of the corresponding point of idx_pen_I1 in image 3
 point3 = [points_3(1:2,idx_pen_I3)' 1]';
@@ -384,9 +386,3 @@ plot(t, -(l4(1)*t + l4(3)) / l4(2), 'g');
 % ToDo: compute the projection of point idx_pen_I4 in the reference image
 pi4 = cross(l1,l4);
 plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*');
-
-figure;imshow(im3);
-hold on;
-% 85 142 143 !!185!!
-p1 = points_3(:, 211);
-plot(p1(1)/p1(3), p1(2)/p1(3), 'c*');
