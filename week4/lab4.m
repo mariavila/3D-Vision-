@@ -36,8 +36,8 @@ for i = 1:N_test
 end
 
 % error
+%mean(mean(euclid(X_test) - euclid(X_trian)))
 euclid(X_test) - euclid(X_trian)
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Reconstruction from two views
