@@ -160,6 +160,13 @@ axis equal;
 
 % Data images: 'scene1.row3.col3.ppm','scene1.row3.col4.ppm'
 % Disparity ground truth: 'truedisp.row3.col3.pgm'
+im_left = imread('Data/scene1.row3.col3.ppm');
+im_left = rgb2gray(im_left);
+im_right = imread('Data/scene1.row3.col4.ppm');
+im_right = rgb2gray(im_right);
+
+
+disp = stereo_computation(im_left,im_right, 0, 0, 11, 'SSD');
 
 % Write a function called 'stereo_computation' that computes the disparity
 % between a pair of rectified images using a local method based on a matching cost 
