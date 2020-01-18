@@ -131,6 +131,87 @@ title('Mosaic A-B-C');
 % which makes it impossible to be matched. The facade on the other
 % hand can be built into a mosaic as it fulfills the conditions.
 
+% ToDo: compute the mosaic with aerial images set 22
+imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+
+ima = imargb;
+imb = imbrgb;
+imc = imcrgb;
+
+[points_a, desc_a] = sift(ima, 'Threshold', 0.01);
+[points_b, desc_b] = sift(imb, 'Threshold', 0.01);
+[points_c, desc_c] = sift(imc, 'Threshold', 0.01);
+
+matches_ab = siftmatch(desc_a, desc_b);
+matches_bc = siftmatch(desc_b, desc_c);
+
+th = 3;
+xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
+xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
+[Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
+
+xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
+xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
+[Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000); 
+
+corners = [-400 1450 -100 1050];
+Hbb = eye(3);
+iwb = apply_H_v2(imbrgb, Hbb , corners);   
+iwa = apply_H_v2(imargb, Hab, corners);    
+iwc = apply_H_v2(imcrgb, inv(Hbc), corners);   
+
+figure;
+imshow(max(iwc, max(iwb, iwa)));
+title('Mosaic A-B-C');
+
+% DISCUSSION: between images the camera has clearly changed the position 
+% and it is the main hypothesis in order for this method to work. That
+% is why the result cannot build the mosaic properly. For the objects
+% closer to the ground (streets, roads, the river,...) the camera is very 
+% far from them and we can assume we have an static camera and they are 
+% correctly transformed so they match. Also mention that it takes quite a 
+% long time to calculate this mosaic and we think that is because of the 
+% lack of correct matches and it takes longer for the RANSAC to compute.
+% See the document to see the images that ilustrate the discussion.
+% 
+% % ToDo: compute the mosaic with aerial images set 22
+% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+% 
+% ima = imargb;
+% imb = imbrgb;
+% imc = imcrgb;
+% 
+% [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
+% [points_b, desc_b] = sift(imb, 'Threshold', 0.01);
+% [points_c, desc_c] = sift(imc, 'Threshold', 0.01);
+% 
+% matches_ab = siftmatch(desc_a, desc_b);
+% matches_bc = siftmatch(desc_b, desc_c);
+% 
+% th = 3;
+% xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
+% xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
+% [Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
+% 
+% xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
+% xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
+% [Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000); 
+% 
+% corners = [-400 1450 -100 1050];
+% Hbb = eye(3);
+% iwb = apply_H_v2(imbrgb, Hbb , corners);   
+% iwa = apply_H_v2(imargb, Hab, corners);    
+% iwc = apply_H_v2(imcrgb, inv(Hbc), corners);   
+% 
+% figure;
+% imshow(max(iwc, max(iwb, iwa)));
+% title('Mosaic A-B-C');
+
+
 % ToDo: compute the mosaic with aerial images set 13
 imargb = imread('Data/aerial/site13/frame00000.png');
 imbrgb = imread('Data/aerial/site13/frame00002.png');
@@ -174,51 +255,6 @@ title('Mosaic A-B-C');
 % be something similar to the case of the tractor but less severe. 
 % This case might be in the limit of a good performance of the method.
 % See the document to see the images that ilustrate the discussion.
-% 
-% % ToDo: compute the mosaic with aerial images set 22
-% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-% 
-% ima = imargb;
-% imb = imbrgb;
-% imc = imcrgb;
-% 
-% [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
-% [points_b, desc_b] = sift(imb, 'Threshold', 0.01);
-% [points_c, desc_c] = sift(imc, 'Threshold', 0.01);
-% 
-% matches_ab = siftmatch(desc_a, desc_b);
-% matches_bc = siftmatch(desc_b, desc_c);
-% 
-% th = 3;
-% xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
-% xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
-% [Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
-% 
-% xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
-% xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
-% [Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000); 
-% 
-% corners = [-400 1450 -100 1050];
-% Hbb = eye(3);
-% iwb = apply_H_v2(imbrgb, Hbb , corners);   
-% iwa = apply_H_v2(imargb, Hab, corners);    
-% iwc = apply_H_v2(imcrgb, inv(Hbc), corners);   
-% 
-% figure;
-% imshow(max(iwc, max(iwb, iwa)));
-% title('Mosaic A-B-C');
-
-% DISCUSSION: between images the camera has clearly changed the position 
-% and it is the main hypothesis in order for this method to work. That
-% is why the result cannot build the mosaic properly. For the objects
-% closer to the ground (streets, roads, the river,...) the camera is very 
-% far from them and we can assume we have an static camera and they are 
-% correctly transformed so they match. Also mention that it takes quite a 
-% long time to calculate this mosaic and we think that is because of the 
-% lack of correct matches and it takes longer for the RANSAC to compute.
-% See the document to see the images that ilustrate the discussion.
 
 % ToDo: comment the results in every of the four cases: hypothetise why it works or
 %       does not work
@@ -227,7 +263,6 @@ title('Mosaic A-B-C');
 %% 4. Refine the homography with the Gold Standard algorithm
 
 % Homography ab
-
 x = points_a(1:2, matches_ab(1,inliers_ab));  %ToDo: set the non-homogeneous point coordinates of the 
 xp = points_b(1:2, matches_ab(2,inliers_ab)); %      point correspondences we will refine with the geometric method
 % x = [points_a(1:2, matches_ab(1,inliers_ab)); ones(1, length(matches_ab(1,inliers_ab)))];
@@ -235,16 +270,16 @@ xp = points_b(1:2, matches_ab(2,inliers_ab)); %      point correspondences we wi
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
-Y_initial = gs_errfunction_v2( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
+Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
 % NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
 % (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
 err_initial = sum( sum( Y_initial.^2 ));
 
 options = optimset('Algorithm', 'levenberg-marquardt');
-P = lsqnonlin(@(t) gs_errfunction_v2(t, Xobs), P0, [], [], options);
+P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
 
 Hab_r = reshape( P(1:9), 3, 3 );
-f = gs_errfunction_v2( P, Xobs ); % lsqnonlin does not return f
+f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
 err_final = sum( sum( f.^2 ));
 
 % we show the geometric error before and after the refinement
@@ -286,16 +321,16 @@ xp = points_c(1:2, matches_bc(2,inliers_bc)); %      point correspondences we wi
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [Hbc(:) ; x(:) ];      % The parameters or independent variables
 
-Y_initial = gs_errfunction_v2( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
+Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
 % NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
 % (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
 err_initial = sum( sum( Y_initial.^2 ));
 
 options = optimset('Algorithm', 'levenberg-marquardt');
-P = lsqnonlin(@(t) gs_errfunction_v2(t, Xobs), P0, [], [], options);
+P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
 
 Hbc_r = reshape( P(1:9), 3, 3 );
-f = gs_errfunction_v2( P, Xobs ); % lsqnonlin does not return f
+f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
 err_final = sum( sum( f.^2 ));
 
 % we show the geometric error before and after the refinement
@@ -330,7 +365,6 @@ plot(xp(1,:), xp(2,:),'+y');
 plot(xhatp(1,:), xhatp(2,:),'+c');
 
 %% Build mosaic
-corners = [-400 1450 -100 1050];
 iwb = apply_H_v2(imbrgb, eye(3), corners); % ToDo: complete the call to the function
 iwa = apply_H_v2(imargb, Hab_r, corners); % ToDo: complete the call to the function
 iwc = apply_H_v2(imcrgb, inv(Hbc_r), corners); % ToDo: complete the call to the function
@@ -349,12 +383,14 @@ T     = imread('Data/calib/template.jpg');
 I{1}  = imread('Data/calib/graffiti1.tif');
 I{2}  = imread('Data/calib/graffiti2.tif');
 I{3}  = imread('Data/calib/graffiti3.tif');
-%I{4}  = imread('Data/calib/graffiti4.tif');
-%I{5}  = imread('Data/calib/graffiti5.tif');
+I{4}  = imread('Data/calib/graffiti4.tif');
+I{5}  = imread('Data/calib/graffiti5.tif');
 Tg = sum(double(T), 3) / 3 / 255;
 Ig{1} = sum(double(I{1}), 3) / 3 / 255;
 Ig{2} = sum(double(I{2}), 3) / 3 / 255;
 Ig{3} = sum(double(I{3}), 3) / 3 / 255;
+Ig{4} = sum(double(I{4}), 3) / 3 / 255;
+Ig{5} = sum(double(I{5}), 3) / 3 / 255;
 
 N = length(I);
 
@@ -500,6 +536,8 @@ end
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
 %%              DLT algorithm (folder "logos").
 %%              Interpret and comment the results.
+clear all
+
 imrgb_building = imread('Data/logos/UPFbuilding.jpg');
 imrgb_stand = imread('Data/logos/UPFstand.jpg');
 imrgb_logo_upf = imread('Data/logos/logoUPF.png');
