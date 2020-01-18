@@ -39,10 +39,11 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
             best_cost = get_initial_cost(matching_cost);
             
             if strcmp(weight_f, 'bilateral')
-                d_c = abs(ones(window_size)*window_left(padding,padding) - window_left);
-                qq = -padding:padding;
-                [qq1,qq2] = meshgrid(qq,qq);                
-                d_g = sqrt((0-qq1)^2+(0-qq2^2));
+                d_c = abs(ones(window_size)*window_left(padding+1,padding+1) - window_left);
+                qq1 = row-padding:row+padding;
+                qq2 = col-padding:col+padding;
+                [qq1,qq2] = meshgrid(qq1,qq2);                
+                d_g = sqrt((row-qq1)^2+(col-qq2)^2);
                 weights = exp(-d_c/gam_col).*exp(-d_g/gam_pos);
             end
             
