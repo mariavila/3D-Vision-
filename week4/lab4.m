@@ -166,7 +166,7 @@ im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
 
 
-disp = stereo_computation(im_left,im_right, 0, 0, 11, 'SSD');
+disp = stereo_computation(im_left,im_right, 0, 16, 3, 'SSD');
 
 % Write a function called 'stereo_computation' that computes the disparity
 % between a pair of rectified images using a local method based on a matching cost 
@@ -198,6 +198,17 @@ disp = stereo_computation(im_left,im_right, 0, 0, 11, 'SSD');
 %
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
 % 31x31). Comment the results.
+
+im_left = imread('Data/scene1.row3.col3.ppm');
+im_left = rgb2gray(im_left);
+im_right = imread('Data/scene1.row3.col4.ppm');
+im_right = rgb2gray(im_right);
+disp_3 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
+imshow(disp_3, []);
+
+disp_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC');
+disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
