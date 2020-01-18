@@ -1,4 +1,4 @@
-function [disparity] = stereo_computation(left_image,right_image, min_disparity, max_disparity, window_size, matching_cost)
+function [disparity] = stereo_computation(left_image,right_image, min_disparity, max_disparity, window_size, matching_cost, weight_f)
 
     disparity = zeros(size(left_image));
     [left_rows, left_cols] = size(left_image);
@@ -10,9 +10,22 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
     right_image = padarray(right_image,[padding padding]);
     
     % init the weights
-    weights = zeros(window_size);
-    weights(:) = 1/(window_size * window_size);
-    
+    switch weight_f
+    case 'ones'
+        weights = zeros(window_size);
+        weights(:) = 1/(window_size * window_size);
+    case 'gaussian'
+        x = -padding:padding;
+        [x,y] = meshgrid(x,x);
+        sigma = 3;
+        exponent = ((x).^2 + (y).^2)./(2*sigma^2);
+        amplitude = 1 / (sigma * sqrt(2*pi));  
+        weights = amplitude  * exp(-exponent);
+    end
+
+
+    gam_col = 7;
+    gam_pos = 7;
     for row = 1+padding:left_rows+padding
         for col = 1+padding:left_cols+padding
             % get patch from with current pixel as center
@@ -24,6 +37,14 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
             
             % init the cost to the worst for each matching algorithm
             best_cost = get_initial_cost(matching_cost);
+            
+            if strcmp(weight_f, 'bilateral')
+                d_c = abs(ones(window_size)*window_left(padding,padding) - window_left);
+                qq = -padding:padding;
+                [qq1,qq2] = meshgrid(qq,qq);                
+                d_g = sqrt((0-qq1)^2+(0-qq2^2));
+                weights = exp(-d_c/gam_col).*exp(-d_g/gam_pos);
+            end
             
             
             for kk = min_col:max_col
@@ -66,4 +87,3 @@ function [val] = get_initial_cost(matching_cost)
             val = -Inf;     
     end
 end
-

@@ -199,8 +199,9 @@ im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
 
 
-disp = stereo_computation(im_left,im_right, 0, 16, 3, 'SSD');
-
+disp = stereo_computation(im_left,im_right, 0, 16, 9, 'SSD', 'ones');
+figure()
+imshow(disp, [])
 % Write a function called 'stereo_computation' that computes the disparity
 % between a pair of rectified images using a local method based on a matching cost 
 % between two local windows.
@@ -236,11 +237,12 @@ im_left = imread('Data/scene1.row3.col3.ppm');
 im_left = rgb2gray(im_left);
 im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
-disp_3 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
+disp_3 = stereo_computation(im_left,im_right, 0, 20, 9, 'NCC', 'ones');
+figure()
 imshow(disp_3, []);
 
-disp_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC');
-disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
+disp_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
+disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,6 +266,16 @@ disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
 % Comment the results and compare them to the previous results (no weights).
 %
 % Note: Use grayscale images (the paper uses color images)
+
+im_left = imread('Data/scene1.row3.col3.ppm');
+im_left = rgb2gray(im_left);
+im_right = imread('Data/scene1.row3.col4.ppm');
+im_right = rgb2gray(im_right);
+
+
+disp = stereo_computation(im_left,im_right, 0, 16, 9, 'SSD', 'bilateral');
+figure()
+imshow(disp,[])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
@@ -321,3 +333,13 @@ disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
 % Remember to take into account occlusions as explained in the lab session.
 % Once done you can apply the code to the another pair of rectified images 
 % provided in the material and use the estimated disparities with previous methods.
+
+im0 = imread('Data/new_view/im0.png')
+disp0 = imread('Data/new_view/disp0.pfm')
+im1 = imread('Data/new_view/im1.png')
+disp1 = imread('Data/new_view/disp1.pfm')
+
+
+
+
+
