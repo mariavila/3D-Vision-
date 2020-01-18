@@ -37,7 +37,7 @@ end
 
 % error
 %mean(mean(euclid(X_test) - euclid(X_trian)))
-euclid(X_test) - euclid(X_trian)
+euclid(X_test) - euclid(X_trian);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Reconstruction from two views
@@ -93,18 +93,34 @@ K = H * K;
 
 
 % ToDo: Compute the Essential matrix from the Fundamental matrix
-E = ...
+E = K'*F*K;
 
+W= [0 -1 0; 
+    1 0 0; 
+    0 0 1];
+
+[U, D, V] = svd(E);
+
+R1= U*W*V';
+if det(R1) < 0
+    R1 = -R1;
+end
+R2= U*W'*V';
+if det(R2) < 0
+    R2 = -R2;
+end
+
+t=U(:,3);
 
 % ToDo: write the camera projection matrix for the first camera
-P1 = ...
+P1 = K*eye(3,4);
 
 % ToDo: write the four possible matrices for the second camera
 Pc2 = {};
-Pc2{1} = ...
-Pc2{2} = ...
-Pc2{3} = ...
-Pc2{4} = ...
+Pc2{1} = K*[R1 t];
+Pc2{2} =  K*[R1 -t];
+Pc2{3} =  K*[R2 t];
+Pc2{4} = K*[R2 -t];
 
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
@@ -124,7 +140,17 @@ plot_camera(Pc2{4},w,h);
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
-P2 = ...
+for i=1:4
+    P2 = Pc2{i};
+    front = triangulate(x1(:,1), x2(:,1), P1, P2, [w h]);
+    proj1 = P1*front;
+    proj2 = P2*front;
+    if (proj1(3) >= 0) && (proj2(3) >= 0)
+        P2 = Pc2{i};
+    end
+end
+
+P2 = Pc2{i};
 
 % Triangulate all matches.
 N = size(x1,2);
@@ -132,7 +158,6 @@ X = zeros(4,N);
 for i = 1:N
     X(:,i) = triangulate(x1(:,i), x2(:,i), P1, P2, [w h]);
 end
-
 
 
 %% Plot with colors
@@ -145,7 +170,7 @@ plot_camera(P1,w,h);
 plot_camera(P2,w,h);
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
-end;
+end
 axis equal;
 
 
@@ -154,6 +179,14 @@ axis equal;
 % ToDo: compute the reprojection errors
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
+
+error1 = gs_errfunction(P1, x1, X);
+error2 = gs_errfunction(P2, x2, X);
+
+histogram([error1 error2])
+hold on
+mean_err = mean(error1 + error2);
+plot([mean_err mean_err], ylim, 'Color','r')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Depth map computation with local methods (SSD)

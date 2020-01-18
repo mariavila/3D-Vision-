@@ -175,6 +175,41 @@ title('Mosaic A-B-C');
 % long time to calculate this mosaic and we think that is because of the 
 % lack of correct matches and it takes longer for the RANSAC to compute.
 % See the document to see the images that ilustrate the discussion.
+% 
+% % ToDo: compute the mosaic with aerial images set 22
+% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+% 
+% ima = imargb;
+% imb = imbrgb;
+% imc = imcrgb;
+% 
+% [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
+% [points_b, desc_b] = sift(imb, 'Threshold', 0.01);
+% [points_c, desc_c] = sift(imc, 'Threshold', 0.01);
+% 
+% matches_ab = siftmatch(desc_a, desc_b);
+% matches_bc = siftmatch(desc_b, desc_c);
+% 
+% th = 3;
+% xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
+% xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
+% [Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
+% 
+% xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
+% xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
+% [Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000); 
+% 
+% corners = [-400 1450 -100 1050];
+% Hbb = eye(3);
+% iwb = apply_H_v2(imbrgb, Hbb , corners);   
+% iwa = apply_H_v2(imargb, Hab, corners);    
+% iwc = apply_H_v2(imcrgb, inv(Hbc), corners);   
+% 
+% figure;
+% imshow(max(iwc, max(iwb, iwa)));
+% title('Mosaic A-B-C');
 
 
 % ToDo: compute the mosaic with aerial images set 13

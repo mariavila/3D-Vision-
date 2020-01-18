@@ -66,3 +66,4 @@ function [val] = get_initial_cost(matching_cost)
             val = -Inf;     
     end
 end
+
