@@ -237,7 +237,7 @@ im_left = imread('Data/scene1.row3.col3.ppm');
 im_left = rgb2gray(im_left);
 im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
-disp_3 = stereo_computation(im_left,im_right, 0, 20, 9, 'NCC', 'ones');
+disp_3 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
 figure()
 imshow(disp_3, []);
 
@@ -334,12 +334,80 @@ imshow(disp,[])
 % Once done you can apply the code to the another pair of rectified images 
 % provided in the material and use the estimated disparities with previous methods.
 
-im0 = imread('Data/new_view/im0.png')
-disp0 = imread('Data/new_view/disp0.pfm')
-im1 = imread('Data/new_view/im1.png')
-disp1 = imread('Data/new_view/disp1.pfm')
+im0 = imread('Data/new_view/im0.png');
+disp0 = hdrimread('Data/new_view/disp0.pfm');
+im1 = imread('Data/new_view/im1.png');
+disp1 = hdrimread('Data/new_view/disp1.pfm');
+im0 = rgb2gray(im0);
+im1 = rgb2gray(im1);
+[rows, cols] = size(disp0);
+%Occlusions
+eps = 100;
+
+% No disparity
+
+for y=1:rows
+    for x=1:cols
+        x0 = x-disp0(y,x);
+        if (x0>0.5) 
+            p0 = round((1-s)*x + s*x0);
+            im0_new(y,p0) = (1-s)*im0(y,x) + s*im1(y,round(x0));
+            d0(y,p0) = disp0(y,x);
+        end      
+        x1 = x+disp1(y,x);
+        if (x1<cols-0.5)
+            p1 = round((1-s)*x1 + s*x);
+            im1_new(y,p1) = (1-s)*im1(y,x) + s*im0(y,round(x1));
+            d1(y,p1) = disp1(y,x);
+        end   
+    end
+end
+figure(3),imshow(im0_new,[])
+figure(4),imshow(im1_new,[])
+front = (d0-d1)>0;
+im_new(front)  = im0_new(front);
+im_new(~front) = im1_new(~front);
+
+figure(5),imshow(im_new,[])
 
 
 
+% WIth disparity
+s = 0.5;
+im0_new = 0*im0;
+im_new = 0*im0;
+d0 = 0*disp0;
+im1f = fliplr(im1);
+disp1f =  fliplr(disp1);
+im1_newf = 0*im1;
+d1f = 0*disp1;
+for y=1:rows
+    for x=1:cols
+        x0 = x-disp0(y,x);
+        if (x0>0.5) 
+            p0 = round((1-s)*x + s*x0);
+            im0_new(y,p0) = im0(y,x);
+            d0(y,p0) = disp0(y,x);
+        end      
+        
+        x1 = x-disp1f(y,x);
+        if (x1>0.5)
+            p1 = round((1-s)*x + s*x1);
+            im1_newf(y,p1) = im1f(y,x);
+            d1f(y,p1) = disp1f(y,x);
+        end   
+    end
+end
+
+im1_new =  fliplr(im1_newf);
+d1 =  fliplr(d1f);
+
+figure(3),imshow(im0_new,[])
+figure(4),imshow(im1_new,[])
+front = (d0-d1)>0;
+im_new(front)  = im0_new(front);
+im_new(~front) = im1_new(~front);
+
+figure(5),imshow(im_new,[])
 
 
