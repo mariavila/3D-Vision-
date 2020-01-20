@@ -36,8 +36,7 @@ for i = 1:N_test
 end
 
 % error
-%mean(mean(euclid(X_test) - euclid(X_trian)))
-euclid(X_test) - euclid(X_trian);
+euclid(X_test) - euclid(X_trian)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Reconstruction from two views
@@ -68,7 +67,7 @@ plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
 %% Fit Fundamental matrix and remove outliers.
 x1 = points{1}(:, matches(1, :));
 x2 = points{2}(:, matches(2, :));
-[F, inliers] = ransac_fundamental_matrix(homog(x1), homog(x2), 2.0);
+[F, inliers] = ransac_fundamental_matrix(homog(x1), homog(x2), 0.5);
 
 % Plot inliers.
 inlier_matches = matches(:, inliers);
@@ -79,9 +78,6 @@ x1 = points{1}(:, inlier_matches(1, :));
 x2 = points{2}(:, inlier_matches(2, :));
 
 %vgg_gui_F(Irgb{1}, Irgb{2}, F');
-
-
-
 
 %% Compute candidate camera matrices.
 
@@ -110,7 +106,7 @@ if det(R2) < 0
     R2 = -R2;
 end
 
-t=U(:,3);
+t=U(:,end);
 
 % ToDo: write the camera projection matrix for the first camera
 P1 = K*eye(3,4);
@@ -147,10 +143,10 @@ for i=1:4
     proj2 = P2*front;
     if (proj1(3) >= 0) && (proj2(3) >= 0)
         P2 = Pc2{i};
+        break
     end
 end
 
-P2 = Pc2{i};
 
 % Triangulate all matches.
 N = size(x1,2);
@@ -183,6 +179,8 @@ axis equal;
 error1 = gs_errfunction(P1, x1, X);
 error2 = gs_errfunction(P2, x2, X);
 
+error1 = error1.^2;
+error2 = error2.^2;
 histogram([error1 error2])
 hold on
 mean_err = mean(error1 + error2);
@@ -194,12 +192,12 @@ plot([mean_err mean_err], ylim, 'Color','r')
 % Data images: 'scene1.row3.col3.ppm','scene1.row3.col4.ppm'
 % Disparity ground truth: 'truedisp.row3.col3.pgm'
 im_left = imread('Data/scene1.row3.col3.ppm');
-im_left = rgb2gray(im_left);
 im_right = imread('Data/scene1.row3.col4.ppm');
-im_right = rgb2gray(im_right);
+im_left = double(rgb2gray(im_left));
+im_right = double(rgb2gray(im_right));
 
 
-disp = stereo_computation(im_left,im_right, 0, 16, 9, 'SSD', 'ones');
+disp = stereo_computationv2(im_left,im_right, 0, 16, 3, 'SSD', 'ones');
 figure()
 imshow(disp, [])
 % Write a function called 'stereo_computation' that computes the disparity
@@ -234,12 +232,12 @@ imshow(disp, [])
 % 31x31). Comment the results.
 
 im_left = imread('Data/scene1.row3.col3.ppm');
-im_left = rgb2gray(im_left);
+im_left = double(rgb2gray(im_left));
 im_right = imread('Data/scene1.row3.col4.ppm');
-im_right = rgb2gray(im_right);
-disp_3 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
+im_right = double(rgb2gray(im_right));
+disp_3 = stereo_computationv2(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
 figure()
-imshow(disp_3, []);
+imshow(disp_3, [0 16]);
 
 disp_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
 disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
@@ -255,7 +253,18 @@ disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
 % results.
 % Notice that in this new data the minimum and maximum disparities may
 % change.
+im_left = imread('Data/0001_rectified_s.png');
+im_left = rgb2gray(im_left);
+im_right = imread('Data/0002_rectified_s.png');
+im_right = rgb2gray(im_right);
 
+disp_SSD = stereo_computationv2(im_left,im_right, 0, 200, 9, 'SSD', 'ones');
+figure()
+imshow(disp_SSD, [])
+
+disp_NCC = stereo_computationv2(im_left,im_right, 0, 200, 9, 'NCC', 'ones');
+figure()
+imshow(disp_NCC, []);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights
 
@@ -268,14 +277,17 @@ disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
 % Note: Use grayscale images (the paper uses color images)
 
 im_left = imread('Data/scene1.row3.col3.ppm');
-im_left = rgb2gray(im_left);
+
 im_right = imread('Data/scene1.row3.col4.ppm');
-im_right = rgb2gray(im_right);
 
-
-disp = stereo_computation(im_left,im_right, 0, 16, 9, 'SSD', 'bilateral');
+im_left2 = rgb2gray(im_left);
+im_right2 = rgb2gray(im_right);
+disp = stereo_computationv2(im_left2,im_right2, 0, 16, 21, 'bilateral', 'bilateral');
 figure()
 imshow(disp,[])
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
@@ -345,7 +357,6 @@ im1 = rgb2gray(im1);
 eps = 100;
 
 % No disparity
-
 for y=1:rows
     for x=1:cols
         x0 = x-disp0(y,x);
@@ -372,7 +383,7 @@ figure(5),imshow(im_new,[])
 
 
 
-% WIth disparity
+% With disparity
 s = 0.5;
 im0_new = 0*im0;
 im_new = 0*im0;
@@ -409,5 +420,4 @@ im_new(front)  = im0_new(front);
 im_new(~front) = im1_new(~front);
 
 figure(5),imshow(im_new,[])
-
 
