@@ -305,23 +305,18 @@ im_left = rgb2gray(im_left);
 im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
 
-
-disp = stereo_computation(im_left,im_right, 0, 17, 9, 'SSD', 'ones');
-figure()
-imshow(disp, [])
-
 % Add  library paths
 basedir='~/UGM/';
 addpath(basedir);
 
 %Set model parameters
-NumFils = size(disp,1);
-NumCols = size(disp,2);
+NumFils = size(im_left,1);
+NumCols = size(im_left,2);
 %cluster color
 K=17; % Number of color clusters (=number of states of hidden variables)
 
 %Pair-wise parameters
-smooth_term=[0.0 2]; % Potts Model
+smooth_term=[0.0 1]; % Potts Model
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Preparing data for GMM fiting
@@ -340,21 +335,14 @@ disp('create UGM model');
 % Create UGM data
 [edgePot,edgeStruct] = CreateGridUGMModel(NumFils, NumCols, K ,smooth_term);
 
+% Call UGM inference algorithms
+display('Loopy Belief Propagation'); tic;
+[nodeBelLBP,edgeBelLBP,logZLBP] = UGM_Infer_LBP(nodePot,edgePot,edgeStruct);
+[~,c_loopy] = max(nodeBelLBP,[],2);
+im_lbp = reshape(c_loopy,size(im_left));toc;
 
-if ~isempty(edgePot)    
-    % Call UGM inference algorithms
-    display('Loopy Belief Propagation'); tic;
-    [nodeBelLBP,edgeBelLBP,logZLBP] = UGM_Infer_LBP(nodePot,edgePot,edgeStruct);
-    [~,c_loopy] = max(nodeBelLBP,[],2);
-    im_lbp = reshape(mu_color(c_loopy,:),size(im));toc;
-    
-    figure
-    imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation');    
-else
-   
-    error('You have to implement the CreateGridUGMModel.m function');
-
-end
+figure
+imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation'); 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
