@@ -11,16 +11,17 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
     
     % init the weights
     switch weight_f
-    case 'ones'
-        weights = zeros(window_size);
-        weights(:) = 1/(window_size * window_size);
-    case 'gaussian'
-        x = -padding:padding;
-        [x,y] = meshgrid(x,x);
-        sigma = 3;
-        exponent = ((x).^2 + (y).^2)./(2*sigma^2);
-        amplitude = 1 / (sigma * sqrt(2*pi));  
-        weights = amplitude  * exp(-exponent);
+        case 'ones'
+            weights = zeros(window_size);
+            weights(:) = 1/(window_size * window_size);
+        case 'gaussian'
+            x = -padding:padding;
+            [x,y] = meshgrid(x,x);
+            sigma = 3;
+            exponent = ((x).^2 + (y).^2)./(2*sigma^2);
+            amplitude = 1 / (sigma * sqrt(2*pi));  
+            weights = amplitude  * exp(-exponent);
+            weights = sum(sum(weights/sum(sum(weights))));
     end
 
 
@@ -32,9 +33,9 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
             window_left = double(left_image(row-padding:row+padding,col-padding:col+padding));            
             
             % calculate the indexes for sliding window
-            min_col = max(max(1+padding, min_disparity), col - max_disparity);
-            max_col = min(left_cols + padding, col + max_disparity);
-            
+            min_col = max(1+padding, col - max_disparity);
+            %max_col = min(left_cols + padding, col + max_disparity);
+            max_col = col;
             % init the cost to the worst for each matching algorithm
             best_cost = get_initial_cost(matching_cost);
             
@@ -70,7 +71,7 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
                         if ncc > best_cost
                             best_cost = ncc;
                             best_index = kk;
-                        end                      
+                        end                                         
                        
                     case 'bilateral'
                         T = 40;
@@ -89,7 +90,7 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
                 end
             end
             % assign the disparity to the "true" pixel
-            disparity(row-padding, col-padding) = abs(col-best_index);
+            disparity(row-padding, col-padding) = col-best_index;
         end        
     end
 end
