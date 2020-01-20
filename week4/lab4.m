@@ -312,25 +312,12 @@ addpath(basedir);
 %Set model parameters
 NumFils = size(im_left,1);
 NumCols = size(im_left,2);
-%cluster color
-K=17; % Number of color clusters (=number of states of hidden variables)
-
+K=17; % =number of states of hidden variables
 %Pair-wise parameters
 smooth_term=[0.0 1]; % Potts Model
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Preparing data for GMM fiting
-%x = reshape(disp, [NumFils * NumCols, 1]);
-%gmm_color = gmdistribution.fit(x,K);
 % Define the unary energy term: data_term
-% nodePot = P( disparity at pixel 'x' | disparity )
-%nodePot=gmm_color.posterior(x);
 nodePot = unary_potentials(im_left,im_right, 0, 16, 9);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%Building 17-grid
-%Build UGM Model for 17-connected segmentation
-disp('create UGM model');
 
 % Create UGM data
 [edgePot,edgeStruct] = CreateGridUGMModel(NumFils, NumCols, K ,smooth_term);
