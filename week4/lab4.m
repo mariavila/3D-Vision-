@@ -288,6 +288,63 @@ imshow(disp,[])
 % Or pick a stereo paper (based on belief propagation) from the literature 
 % and implement it. Pick a simple method or just simplify the method they propose.
 
+im_left = imread('Data/scene1.row3.col3.ppm');
+im_left = rgb2gray(im_left);
+im_right = imread('Data/scene1.row3.col4.ppm');
+im_right = rgb2gray(im_right);
+
+
+disp = stereo_computation(im_left,im_right, 0, 17, 9, 'SSD', 'ones');
+figure()
+imshow(disp, [])
+
+% Add  library paths
+basedir='~/UGM/';
+addpath(basedir);
+
+%Set model parameters
+NumFils = size(disp,1);
+NumCols = size(disp,2);
+%cluster color
+K=17; % Number of color clusters (=number of states of hidden variables)
+
+%Pair-wise parameters
+smooth_term=[0.0 2]; % Potts Model
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Preparing data for GMM fiting
+%x = reshape(disp, [NumFils * NumCols, 1]);
+%gmm_color = gmdistribution.fit(x,K);
+% Define the unary energy term: data_term
+% nodePot = P( disparity at pixel 'x' | disparity )
+%nodePot=gmm_color.posterior(x);
+nodePot = unary_potentials(im_left,im_right, 0, 16, 9);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Building 17-grid
+%Build UGM Model for 17-connected segmentation
+disp('create UGM model');
+
+% Create UGM data
+[edgePot,edgeStruct] = CreateGridUGMModel(NumFils, NumCols, K ,smooth_term);
+
+
+if ~isempty(edgePot)    
+    % Call UGM inference algorithms
+    display('Loopy Belief Propagation'); tic;
+    [nodeBelLBP,edgeBelLBP,logZLBP] = UGM_Infer_LBP(nodePot,edgePot,edgeStruct);
+    [~,c_loopy] = max(nodeBelLBP,[],2);
+    im_lbp = reshape(mu_color(c_loopy,:),size(im));toc;
+    
+    figure
+    imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation');    
+else
+   
+    error('You have to implement the CreateGridUGMModel.m function');
+
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Depth computation with Plane Sweeping
 
