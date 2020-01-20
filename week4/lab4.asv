@@ -285,9 +285,14 @@ im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
 
 
-disp = stereo_computationv2(im_left,im_right, 0, 16, 35, 'bilateral', 'bilateral');
+disp = stereo_computationv2(im_left,im_right, 0, 16, 21, 'bilateral', 'bilateral');
 figure()
 imshow(disp,[])
+
+disp = stereo_computationv3(im_right,im_left, 0, 16, 21, 'BW');
+figure()
+imshow(disp,[])
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation

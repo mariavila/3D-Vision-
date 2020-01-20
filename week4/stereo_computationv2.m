@@ -5,6 +5,7 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
     
     % we need to pad half the window size 
     padding = floor(window_size/2); 
+    center = padding+1;
     
     left_image = padarray(left_image,[padding padding]);
     right_image = padarray(right_image,[padding padding]);
@@ -26,7 +27,7 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
 
 
     gam_col = 5;
-    gam_pos = 17.5;
+    gam_pos = window_size/2;
     for row = 1+padding:left_rows+padding
         for col = 1+padding:left_cols+padding
             % get patch from with current pixel as center
@@ -37,18 +38,8 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
             %max_col = min(left_cols + padding, col + max_disparity);
             max_col = col;
             % init the cost to the worst for each matching algorithm
-            best_cost = get_initial_cost(matching_cost);
-            
-            if strcmp(weight_f, 'bilateral')
-                d_c = abs(ones(window_size)*window_left(padding+1,padding+1) - window_left);
-                qq1 = row-padding:row+padding;
-                qq2 = col-padding:col+padding;
-                [qq1,qq2] = meshgrid(qq1,qq2);                
-                d_g = sqrt((row-qq1)^2+(col-qq2)^2);
-                weights = exp(-d_c/gam_col).*exp(-d_g/gam_pos);
-            end
-            
-            
+            best_cost = get_initial_cost(matching_cost);          
+                       
             for kk = min_col:max_col
                 window_right = double(right_image(row-padding:row+padding,kk-padding:kk+padding));
                 
@@ -74,15 +65,20 @@ function [disparity] = stereo_computationv2(left_image,right_image, min_disparit
                         end                                         
                        
                     case 'bilateral'
+                        num = 0;
+                        den = 0;
                         T = 40;
-                        d_c = abs(ones(window_size)*window_right(padding+1,padding+1) - window_left);
-                        qq1 = row-padding:row+padding;
-                        qq2 = kk-padding:kk+padding;
-                        [qq1,qq2] = meshgrid(qq1,qq2);                
-                        d_g = sqrt((row-qq1)^2+(kk-qq2)^2);
-                        weights_r = exp(-d_c/gam_col).*exp(-d_g/gam_pos);
-                        cost = min(sum(sum(abs(window_left-window_right))),T);
-                        c = sum(sum(weights.*weights_r.*cost))/(sum(sum(weights.*weights_r)));
+                        for ll = 1:window_size
+                            for mm = 1:window_size
+                                p_q = sqrt((ll-padding)^2 + (mm-padding)^2);
+                                weight_left = exp(-((1/3*abs(window_left(center,center)-window_left(ll,mm))/gam_col) + (p_q/gam_pos)));
+                                weight_right = exp(-((1/3*abs(window_right(center,center)-window_right(ll,mm))/gam_col) + (p_q/gam_pos)));
+                                cost = min(abs(window_left(ll,mm)-window_right(ll,mm)),T);
+                                num = num + weight_left*weight_right*cost;
+                                den = den + weight_left*weight_right;
+                            end
+                        end
+                        c = num/den;
                         if c < best_cost
                             best_cost = c;
                             best_index = kk;
