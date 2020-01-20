@@ -20,5 +20,6 @@ function [ X ] = triangulate( x1, x2, P1, P2, imsize )
          x2s(2) * P2s(3, :) - P2s(2, :)];
     [~,~,V] = svd(A);
     X = V(:,4);
+    X = X./X(end);
 end
 
