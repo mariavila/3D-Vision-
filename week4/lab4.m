@@ -191,36 +191,41 @@ plot([mean_err mean_err], ylim, 'Color','r')
 
 % Data images: 'scene1.row3.col3.ppm','scene1.row3.col4.ppm'
 % Disparity ground truth: 'truedisp.row3.col3.pgm'
+
+% Note 1: Use grayscale images
+% Note 2: For this first set of images use 0 as minimum disparity 
+% and 16 as the the maximum one.
+
+% In this part we ask to implement only the SSD cost
+%
+% Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
+% 31x31) and the Mean Square Error (MSE). Comment the results.
+
 im_left = imread('Data/scene1.row3.col3.ppm');
 im_right = imread('Data/scene1.row3.col4.ppm');
 im_left = double(rgb2gray(im_left));
 im_right = double(rgb2gray(im_right));
 
 
-disp = stereo_computationv2(im_left,im_right, 0, 16, 3, 'SSD', 'ones');
+dispSSD_3 = stereo_computation(im_left,im_right, 0, 16, 3, 'SSD');
 figure()
-imshow(disp, [])
-% Write a function called 'stereo_computation' that computes the disparity
-% between a pair of rectified images using a local method based on a matching cost 
-% between two local windows.
-% 
-% The input parameters are 5:
-% - left image
-% - right image
-% - minimum disparity
-% - maximum disparity
-% - window size (e.g. a value of 3 indicates a 3x3 window)
-% - matching cost (the user may able to choose between SSD and NCC costs)
-%
-% In this part we ask to implement only the SSD cost
-%
-% Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
-% 31x31) and the Mean Square Error (MSE). Comment the results.
-%
-% Note 1: Use grayscale images
-% Note 2: For this first set of images use 0 as minimum disparity 
-% and 16 as the the maximum one.
+imshow(dispSSD_3, [])
+%imwrite(uint8(dispSSD_3/max(dispSSD_3(:))*255), 'dispSSD_3.png')
 
+dispSSD_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'SSD');
+figure()
+imshow(dispSSD_9, [])
+%imwrite(uint8(dispSSD_9/max(dispSSD_9(:))*255), 'dispSSD_9.png')
+
+dispSSD_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'SSD');
+figure()
+imshow(dispSSD_21, [])
+%imwrite(uint8(dispSSD_21/max(dispSSD_21(:))*255), 'dispSSD_21.png')
+
+dispSSD_31 = stereo_computation(im_left,im_right, 0, 16, 31, 'SSD');
+figure()
+imshow(dispSSD_31, [])
+%imwrite(uint8(dispSSD_31/max(dispSSD_31(:))*255), 'dispSSD_31.png')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
@@ -235,13 +240,26 @@ im_left = imread('Data/scene1.row3.col3.ppm');
 im_left = double(rgb2gray(im_left));
 im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = double(rgb2gray(im_right));
-disp_3 = stereo_computationv2(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
+
+dispNCC_3 = stereo_computation(im_left,im_right, 0, 16, 3, 'NCC');
 figure()
-imshow(disp_3, [0 16]);
+imshow(dispNCC_3, []);
+%imwrite(uint8(dispNCC_3/max(dispNCC_3(:))*255), 'dispNCC_3.png')
 
-disp_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC', 'ones');
-disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
+dispNCC_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'NCC');
+figure()
+imshow(dispNCC_9, []);
+%imwrite(uint8(dispNCC_9/max(dispNCC_9(:))*255), 'dispNCC_9.png')
 
+dispNCC_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC');
+figure()
+imshow(dispNCC_21, []);
+%imwrite(uint8(dispNCC_21/max(dispNCC_21(:))*255), 'dispNCC_21.png')
+
+dispNCC_31 = stereo_computation(im_left,im_right, 0, 16, 31, 'NCC');
+figure()
+imshow(dispNCC_31, []);
+%imwrite(uint8(dispNCC_31/max(dispNCC_31(:))*255), 'dispNCC_31.png')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
@@ -254,15 +272,39 @@ disp_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'NCC', 'ones');
 % Notice that in this new data the minimum and maximum disparities may
 % change.
 im_left = imread('Data/0001_rectified_s.png');
-im_left = rgb2gray(im_left);
+im_left = double(rgb2gray(im_left));
 im_right = imread('Data/0002_rectified_s.png');
-im_right = rgb2gray(im_right);
+im_right = double(rgb2gray(im_right));
 
-disp_SSD = stereo_computationv2(im_left,im_right, 0, 200, 9, 'SSD', 'ones');
+disp_SSD_16 = stereo_computation(im_left,im_right, -50, 20, 3, 'SSD');
 figure()
-imshow(disp_SSD, [])
+imshow(disp_SSD_16, [])
+%imwrite(uint8(disp_SSD_16/max(disp_SSD_16(:))*255), 'dispSSD_16.png')
 
-disp_NCC = stereo_computationv2(im_left,im_right, 0, 200, 9, 'NCC', 'ones');
+disp_SSD_50 = stereo_computation(im_left,im_right, 0, 50, 21, 'SSD');
+figure()
+imshow(disp_SSD_50, [])
+%imwrite(uint8(disp_SSD_50/max(disp_SSD_50(:))*255), 'dispSSD_50.png')
+
+
+disp_SSD_100 = stereo_computation(im_left,im_right, 0, 100, 21, 'SSD');
+figure()
+imshow(disp_SSD_100, [])
+%imwrite(uint8(disp_SSD_100/max(disp_SSD_100(:))*255), 'dispSSD_100.png')
+
+disp_SSD_150 = stereo_computation(im_left,im_right, 0, 150, 21, 'SSD', 'ones');
+figure()
+imshow(disp_SSD_150, [])
+%imwrite(uint8(disp_SSD_150/max(disp_SSD_150(:))*255), 'dispSSD_150.png')
+
+
+disp_SSD_200 = stereo_computation(im_left,im_right, 0, 200, 21, 'SSD', 'ones');
+figure()
+imshow(disp_SSD_200, [])
+%imwrite(uint8(disp_SSD_200/max(disp_SSD_200(:))*255), 'dispSSD_200.png')
+
+
+disp_NCC = stereo_computationv2(im_left,im_right, 0, 100, 9, 'NCC', 'ones');
 figure()
 imshow(disp_NCC, []);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,18 +319,34 @@ imshow(disp_NCC, []);
 % Note: Use grayscale images (the paper uses color images)
 
 im_left = imread('Data/scene1.row3.col3.ppm');
-
+im_left = rgb2gray(im_left);
 im_right = imread('Data/scene1.row3.col4.ppm');
+im_right = rgb2gray(im_right);
 
-im_left2 = rgb2gray(im_left);
-im_right2 = rgb2gray(im_right);
-disp = stereo_computationv2(im_left2,im_right2, 0, 16, 21, 'bilateral', 'bilateral');
+% dispBI_21_30 = stereo_computation(im_left,im_right, 0, 16, 21, 'bilateral');
+% figure()
+% imshow(dispBI_21_30,[])
+% %imwrite(uint8(dispBI_21_30/max(dispBI_21_30(:))*255), 'dispBI_21_30.png')
+
+dispBI_3 = stereo_computation(im_left,im_right, 0, 16, 3, 'bilateral');
 figure()
-imshow(disp,[])
+imshow(dispBI_3,[])
+%imwrite(uint8(dispBI_3/max(dispBI_3(:))*255), 'dispBI_3.png')
 
+dispBI_9 = stereo_computation(im_left,im_right, 0, 16, 9, 'bilateral');
+figure()
+imshow(dispBI_9,[])
+%imwrite(uint8(dispBI_9/max(dispBI_9(:))*255), 'dispBI_9.png')
 
+dispBI_21 = stereo_computation(im_left,im_right, 0, 16, 21, 'bilateral');
+figure()
+imshow(dispBI_21,[])
+%imwrite(uint8(dispBI_21/max(dispBI_21(:))*255), 'dispBI_21.png')
 
-
+dispBI_31 = stereo_computation(im_left,im_right, 0, 16, 31, 'bilateral');
+figure()
+imshow(dispBI_31,[])
+%imwrite(uint8(dispBI_31/max(dispBI_31(:))*255), 'dispBI_31.png')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
 
@@ -416,8 +474,12 @@ disp1 = hdrimread('Data/new_view/disp1.pfm');
 im0 = rgb2gray(im0);
 im1 = rgb2gray(im1);
 [rows, cols] = size(disp0);
-%Occlusions
-eps = 100;
+
+im0_new = 0*im0;
+d0 = 0*disp0;
+im1_new = 0*im1;
+d1 = 0*disp1;
+s = 0.5;
 
 % No disparity
 for y=1:rows
@@ -447,7 +509,6 @@ figure(5),imshow(im_new,[])
 
 
 % With disparity
-s = 0.5;
 im0_new = 0*im0;
 im_new = 0*im0;
 d0 = 0*disp0;

@@ -33,8 +33,8 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
             window_left = double(left_image(row-padding:row+padding,col-padding:col+padding));            
             
             % calculate the indexes for sliding window
-            min_col = max(1+padding, col - max_disparity);
-            max_col = col-min_disparity;
+            min_col = max(center, col - max_disparity);
+            max_col = min(col-min_disparity, left_cols+padding);
             % init the cost to the worst for each matching algorithm
             best_cost = get_initial_cost(matching_cost);          
                        
