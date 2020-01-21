@@ -402,13 +402,12 @@ P2_scaled = P2;
 P1_scaled(1:2, :) = P1_scaled(1:2, :)*scale_factor;
 P2_scaled(1:2, :) = P2_scaled(1:2, :)*scale_factor;
 
-range_depth = [1 15];
-step_depth = 0.5;
-size_window = 17;
+range_depth = [1 16];
+size_window = 21;
 cost_function = 'NCC';
-
-disparity = plane_sweeping(I_scaled{1}, I_scaled{2}, P1, P2, range_depth, size_window, cost_function, step_depth);
-
+threshold = 0.1;
+disparity = plane_sweeping(I_scaled, P1, P2, size_window, threshold,cost_function,false);
+disparity = imcomplement(disparity);
 figure,
 imshow(disparity,[])
 

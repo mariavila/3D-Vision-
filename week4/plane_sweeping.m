@@ -17,13 +17,6 @@ for depth=1:20
     H = P1*A(:,1:3);
     
     I_2projected = apply_H_v2(I{2}, H, corners);
-    if plot_im_matching
-        auxI = repmat(I{1},[1,1,2]);
-        auxI(:,:,3) = I_2projected;
-        imshow(auxI);
-        title(['d_', num2str(depth)]);
-        pause
-    end
     
     I_2projected = padarray(I_2projected,[pad,pad],'replicate');
     I_2projected(I_2projected==0)=Inf;
