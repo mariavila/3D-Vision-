@@ -404,10 +404,9 @@ P2_scaled(1:2, :) = P2_scaled(1:2, :)*scale_factor;
 
 range_depth = [1 16];
 size_window = 21;
-cost_function = 'NCC';
-threshold = 0.1;
-disparity = plane_sweeping(I_scaled, P1, P2, size_window, threshold,cost_function,false);
-disparity = imcomplement(disparity);
+cost_function = 'SSD';
+
+disparity = plane_sweeping(I_scaled, P1, P2, size_window, cost_function);
 figure,
 imshow(disparity,[])
 
