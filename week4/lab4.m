@@ -464,13 +464,12 @@ disp_2_3 = stereo_computationv2(im_2, im_3, 0, 16, 9, 'NCC', 'ones');
 % Remember to take into account occlusions as explained in the lab session.
 % Once done you can apply the code to the another pair of rectified images 
 % provided in the material and use the estimated disparities with previous methods.
-
 im0 = imread('Data/new_view/im0.png');
 disp0 = hdrimread('Data/new_view/disp0.pfm');
 im1 = imread('Data/new_view/im1.png');
 disp1 = hdrimread('Data/new_view/disp1.pfm');
-im0 = rgb2gray(im0);
-im1 = rgb2gray(im1);
+% im0 = rgb2gray(im0);
+% im1 = rgb2gray(im1);
 [rows, cols] = size(disp0);
 
 im0_new = 0*im0;
@@ -478,31 +477,54 @@ d0 = 0*disp0;
 im1_new = 0*im1;
 d1 = 0*disp1;
 s = 0.5;
-
+eps = 7;
 % No disparity
 for y=1:rows
     for x=1:cols
         x0 = x-disp0(y,x);
         if (x0>0.5) 
             p0 = round((1-s)*x + s*x0);
-            im0_new(y,p0) = (1-s)*im0(y,x) + s*im1(y,round(x0));
+            im0_new(y,p0,:) = (1-s)*im0(y,x,:) + s*im1(y,round(x0),:);
             d0(y,p0) = disp0(y,x);
         end      
         x1 = x+disp1(y,x);
         if (x1<cols-0.5)
             p1 = round((1-s)*x1 + s*x);
-            im1_new(y,p1) = (1-s)*im1(y,x) + s*im0(y,round(x1));
+            im1_new(y,p1,:) = (1-s)*im1(y,x,:) + s*im0(y,round(x1),:);
             d1(y,p1) = disp1(y,x);
         end   
     end
 end
 figure(3),imshow(im0_new,[])
 figure(4),imshow(im1_new,[])
-front = (d0-d1)>0;
-im_new(front)  = im0_new(front);
-im_new(~front) = im1_new(~front);
+front = (d0-d1)>eps;
+% im_new = im0_new*0;
+% im_new(front) = im0_new(front);
+% im_new(~front) = im1_new(~front);
+% figure(6),imshow(im_new,[])
 
-figure(5),imshow(im_new,[])
+red0 = im0_new(:,:,1);
+green0 = im0_new(:,:,2);
+blue0 = im0_new(:,:,3);
+
+red1 = im1_new(:,:,1);
+green1 = im1_new(:,:,2);
+blue1 = im1_new(:,:,3);
+
+nred = red0*0;
+ngreen = red0*0;
+nblue = red0*0;
+
+nred(front) = red0(front);
+ngreen(front) = green0(front);
+nblue(front) = blue0(front);
+
+nred(~front) = red1(~front);
+ngreen(~front) = green1(~front);
+nblue(~front) = blue1(~front);
+
+im_new = cat(3, nred, ngreen, nblue);
+figure(6),imshow(im_new,[])
 
 
 
@@ -514,19 +536,20 @@ im1f = fliplr(im1);
 disp1f =  fliplr(disp1);
 im1_newf = 0*im1;
 d1f = 0*disp1;
+s = 0.1
 for y=1:rows
     for x=1:cols
         x0 = x-disp0(y,x);
         if (x0>0.5) 
             p0 = round((1-s)*x + s*x0);
-            im0_new(y,p0) = im0(y,x);
+            im0_new(y,p0,:) = im0(y,x,:);
             d0(y,p0) = disp0(y,x);
         end      
         
         x1 = x-disp1f(y,x);
         if (x1>0.5)
             p1 = round((1-s)*x + s*x1);
-            im1_newf(y,p1) = im1f(y,x);
+            im1_newf(y,p1,:) = im1f(y,x,:);
             d1f(y,p1) = disp1f(y,x);
         end   
     end
@@ -537,9 +560,30 @@ d1 =  fliplr(d1f);
 
 figure(3),imshow(im0_new,[])
 figure(4),imshow(im1_new,[])
-front = (d0-d1)>0;
-im_new(front)  = im0_new(front);
-im_new(~front) = im1_new(~front);
+front = (d0-d1)>eps;
+% im_new(front)  = im0_new(front);
+% im_new(~front) = im1_new(~front);
+red0 = im0_new(:,:,1);
+green0 = im0_new(:,:,2);
+blue0 = im0_new(:,:,3);
 
-figure(5),imshow(im_new,[])
+red1 = im1_new(:,:,1);
+green1 = im1_new(:,:,2);
+blue1 = im1_new(:,:,3);
+
+nred = red0*0;
+ngreen = red0*0;
+nblue = red0*0;
+
+nred(front) = red0(front);
+ngreen(front) = green0(front);
+nblue(front) = blue0(front);
+
+nred(~front) = red1(~front);
+ngreen(~front) = green1(~front);
+nblue(~front) = blue1(~front);
+
+im_new = cat(3, nred, ngreen, nblue);
+figure(6),imshow(im_new,[])
+
 
