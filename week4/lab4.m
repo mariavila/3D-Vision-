@@ -372,7 +372,7 @@ NumFils = size(im_left,1);
 NumCols = size(im_left,2);
 K=17; % =number of states of hidden variables
 %Pair-wise parameters
-smooth_term=[0.0 1]; % Potts Model
+smooth_term=[0.0 1.67]; % Potts Model
 
 % Define the unary energy term: data_term
 nodePot = unary_potentials(im_left,im_right, 0, 16, 9);
