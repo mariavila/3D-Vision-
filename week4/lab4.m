@@ -175,7 +175,7 @@ axis equal;
 % ToDo: compute the reprojection errors
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
-
+figure()
 error1 = gs_errfunction(P1, x1, X);
 error2 = gs_errfunction(P2, x2, X);
 
@@ -184,6 +184,7 @@ error2 = error2.^2;
 histogram([error1 error2])
 hold on
 mean_err = mean(error1 + error2);
+
 plot([mean_err mean_err], ylim, 'Color','r')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,37 +277,49 @@ im_left = double(rgb2gray(im_left));
 im_right = imread('Data/0002_rectified_s.png');
 im_right = double(rgb2gray(im_right));
 
-disp_SSD_16 = stereo_computation(im_left,im_right, -50, 20, 3, 'SSD');
+disp_SSD = stereo_computation(im_left,im_right, -10, 30, 3, 'SSD');
 figure()
-imshow(disp_SSD_16, [])
+imshow(disp_SSD, [])
 %imwrite(uint8(disp_SSD_16/max(disp_SSD_16(:))*255), 'dispSSD_16.png')
 
-disp_SSD_50 = stereo_computation(im_left,im_right, 0, 50, 21, 'SSD');
+disp_SSD = stereo_computation(im_left,im_right, -10, 30, 9, 'SSD');
 figure()
-imshow(disp_SSD_50, [])
+imshow(disp_SSD, [])
 %imwrite(uint8(disp_SSD_50/max(disp_SSD_50(:))*255), 'dispSSD_50.png')
 
 
-disp_SSD_100 = stereo_computation(im_left,im_right, 0, 100, 21, 'SSD');
+disp_SSD = stereo_computation(im_left,im_right, -10, 30, 21, 'SSD');
 figure()
-imshow(disp_SSD_100, [])
+imshow(disp_SSD, [])
 %imwrite(uint8(disp_SSD_100/max(disp_SSD_100(:))*255), 'dispSSD_100.png')
 
-disp_SSD_150 = stereo_computation(im_left,im_right, 0, 150, 21, 'SSD', 'ones');
+disp_SSD = stereo_computation(im_left,im_right, -10, 30, 31, 'SSD');
 figure()
-imshow(disp_SSD_150, [])
+imshow(disp_SSD, [])
+%imwrite(uint8(disp_SSD_150/max(disp_SSD_150(:))*255), 'dispSSD_150.png')
+
+disp_NCC = stereo_computation(im_left,im_right, -10, 30, 3, 'NCC');
+figure()
+imshow(disp_NCC, [])
+%imwrite(uint8(disp_SSD_16/max(disp_SSD_16(:))*255), 'dispSSD_16.png')
+
+disp_NCC = stereo_computation(im_left,im_right, -10, 30, 9, 'NCC');
+figure()
+imshow(disp_NCC, [])
+%imwrite(uint8(disp_SSD_50/max(disp_SSD_50(:))*255), 'dispSSD_50.png')
+
+
+disp_NCC = stereo_computation(im_left,im_right, -10, 30, 21, 'NCC');
+figure()
+imshow(disp_NCC, [])
+%imwrite(uint8(disp_SSD_100/max(disp_SSD_100(:))*255), 'dispSSD_100.png')
+
+disp_NCC = stereo_computation(im_left,im_right, -10, 30, 31, 'NCC');
+figure()
+imshow(disp_SSD_NCC, [])
 %imwrite(uint8(disp_SSD_150/max(disp_SSD_150(:))*255), 'dispSSD_150.png')
 
 
-disp_SSD_200 = stereo_computation(im_left,im_right, 0, 200, 21, 'SSD', 'ones');
-figure()
-imshow(disp_SSD_200, [])
-%imwrite(uint8(disp_SSD_200/max(disp_SSD_200(:))*255), 'dispSSD_200.png')
-
-
-disp_NCC = stereo_computationv2(im_left,im_right, 0, 100, 9, 'NCC', 'ones');
-figure()
-imshow(disp_NCC, []);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights
 
@@ -441,12 +454,12 @@ imshow(disparity,[])
 % has an online demo available: 
 % http://demo.ipol.im/demo/m_quasi_euclidean_epipolar_rectification/
 
-im_1 = rgb2gray(imread('Data/0001_s.png'));
-im_2 = rgb2gray(imread('Data/0002_s.png'));
-im_3 = rgb2gray(imread('Data/0003_s.png'));
-
-disp_1_2 = stereo_computationv2(im_1, im_2, 0, 16, 9, 'NCC', 'ones');
-disp_2_3 = stereo_computationv2(im_2, im_3, 0, 16, 9, 'NCC', 'ones');
+% im_1 = rgb2gray(imread('Data/0001_s.png'));
+% im_2 = rgb2gray(imread('Data/0002_s.png'));
+% im_3 = rgb2gray(imread('Data/0003_s.png'));
+% 
+% disp_1_2 = stereo_computationv2(im_1, im_2, 0, 16, 9, 'NCC', 'ones');
+% disp_2_3 = stereo_computationv2(im_2, im_3, 0, 16, 9, 'NCC', 'ones');
 
 
 
@@ -468,17 +481,16 @@ im0 = imread('Data/new_view/im0.png');
 disp0 = hdrimread('Data/new_view/disp0.pfm');
 im1 = imread('Data/new_view/im1.png');
 disp1 = hdrimread('Data/new_view/disp1.pfm');
-% im0 = rgb2gray(im0);
-% im1 = rgb2gray(im1);
 [rows, cols] = size(disp0);
 
 im0_new = 0*im0;
 d0 = 0*disp0;
 im1_new = 0*im1;
 d1 = 0*disp1;
-s = 0.5;
+s = 0.1;
 eps = 7;
-% No disparity
+
+% No disparity, here we don't take into account occlusions
 for y=1:rows
     for x=1:cols
         x0 = x-disp0(y,x);
@@ -495,13 +507,9 @@ for y=1:rows
         end   
     end
 end
-figure(3),imshow(im0_new,[])
-figure(4),imshow(im1_new,[])
+figure(),imshow(im0_new,[])
+figure(),imshow(im1_new,[])
 front = (d0-d1)>eps;
-% im_new = im0_new*0;
-% im_new(front) = im0_new(front);
-% im_new(~front) = im1_new(~front);
-% figure(6),imshow(im_new,[])
 
 red0 = im0_new(:,:,1);
 green0 = im0_new(:,:,2);
@@ -524,11 +532,12 @@ ngreen(~front) = green1(~front);
 nblue(~front) = blue1(~front);
 
 im_new = cat(3, nred, ngreen, nblue);
-figure(6),imshow(im_new,[])
+figure(),imshow(im_new,[])
 
 
 
 % With disparity
+s=0.8;
 im0_new = 0*im0;
 im_new = 0*im0;
 d0 = 0*disp0;
@@ -536,7 +545,6 @@ im1f = fliplr(im1);
 disp1f =  fliplr(disp1);
 im1_newf = 0*im1;
 d1f = 0*disp1;
-s = 0.1
 for y=1:rows
     for x=1:cols
         x0 = x-disp0(y,x);
@@ -548,7 +556,7 @@ for y=1:rows
         
         x1 = x-disp1f(y,x);
         if (x1>0.5)
-            p1 = round((1-s)*x + s*x1);
+            p1 = round((1-s)*x1 + s*x);
             im1_newf(y,p1,:) = im1f(y,x,:);
             d1f(y,p1) = disp1f(y,x);
         end   
@@ -558,8 +566,8 @@ end
 im1_new =  fliplr(im1_newf);
 d1 =  fliplr(d1f);
 
-figure(3),imshow(im0_new,[])
-figure(4),imshow(im1_new,[])
+figure(),imshow(im0_new,[])
+figure(),imshow(im1_new,[])
 front = (d0-d1)>eps;
 % im_new(front)  = im0_new(front);
 % im_new(~front) = im1_new(~front);
@@ -584,6 +592,6 @@ ngreen(~front) = green1(~front);
 nblue(~front) = blue1(~front);
 
 im_new = cat(3, nred, ngreen, nblue);
-figure(6),imshow(im_new,[])
+figure(),imshow(im_new,[])
 
 
