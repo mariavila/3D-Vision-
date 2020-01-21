@@ -1,4 +1,4 @@
-function [ I_depth ] = plane_sweeping( I,P1,P2,window_size, matching_function )
+function [ I_depth ] = plane_sweeping( I,P1,P2,window_size, range_depth, matching_function )
 
 weights = ones(window_size)/window_size.^2;
 [rows,cols] = size(I{1});
@@ -10,7 +10,7 @@ if strcmpi(matching_function,'NCC')
 end
 pad = floor(window_size/2);
 I1 = padarray(I{1},[pad,pad],'replicate');
-for depth=1:20
+for depth=range_depth(1):range_depth(2)
     fronto_parallel_plane = (P2(3,:)-[0,0,0,depth])';
     
     A = inv([P2; fronto_parallel_plane']);
