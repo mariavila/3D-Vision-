@@ -1,4 +1,4 @@
-function [disparity] = stereo_computation(left_image,right_image, min_disparity, max_disparity, window_size, matching_cost)
+function [disparity] = stereo_computation2(right_image,left_image, min_disparity, max_disparity, window_size, matching_cost)
     % Write a function called 'stereo_computation' that computes the disparity
     % between a pair of rectified images using a local method based on a matching cost 
     % between two local windows.
@@ -10,36 +10,36 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
     % - maximum disparity
     % - window size (e.g. a value of 3 indicates a 3x3 window)
     % - matching cost (the user may able to choose between SSD and NCC costs)
-    disparity = zeros(size(left_image));
-    [left_rows, left_cols] = size(left_image);
+    disparity = zeros(size(right_image));
+    [left_rows, left_cols] = size(right_image);
     
     % we need to pad half the window size 
     padding = floor(window_size/2); 
     center = padding+1;
     
-    left_image = double(padarray(left_image,[padding padding]));
     right_image = double(padarray(right_image,[padding padding]));
+    left_image = double(padarray(left_image,[padding padding]));
     
     % init the weights
     weights = zeros(window_size);
     weights(:) = 1/(window_size * window_size);
 
-    gam_col = 15;
+    gam_col = 5;
     gam_pos = window_size/2;
     T = 40;
     for row = 1+padding:left_rows+padding
         for col = 1+padding:left_cols+padding
             % get patch from with current pixel as center
-            window_left = double(left_image(row-padding:row+padding,col-padding:col+padding));            
+            window_left = double(right_image(row-padding:row+padding,col-padding:col+padding));            
             
             % calculate the indexes for sliding window
-            min_col = max(center, col - max_disparity);
-            max_col = min(col-min_disparity, left_cols+padding);
+            max_col = min(col + max_disparity, left_cols + padding);
+            min_col = col+min_disparity;
             % init the cost to the worst for each matching algorithm
             best_cost = get_initial_cost(matching_cost);          
                        
             for kk = min_col:max_col
-                window_right = double(right_image(row-padding:row+padding,kk-padding:kk+padding));
+                window_right = double(left_image(row-padding:row+padding,kk-padding:kk+padding));
                 
                 % compute cost for every pixel of the window
                 switch matching_cost
@@ -83,7 +83,7 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
                 end
             end
             % assign the disparity to the "true" pixel
-            disparity(row-padding, col-padding) = col-best_index;
+            disparity(row-padding, col-padding) = best_index-col;
         end        
     end
 end

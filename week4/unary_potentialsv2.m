@@ -36,8 +36,7 @@ function [ unary_pot ] = unary_potentialsv2( left_image,right_image, min_dispari
                 c = c+1;
             end
             %Assign disparity possibility
-            aux_ssd = sum(ssd) -ssd;
-            unary_pot(pixel_idx, :) = flip(aux_ssd/sum(aux_ssd));      
+            unary_pot(pixel_idx, :) = ssd/sum(ssd);      
         end        
     end
 end
