@@ -1,71 +1,62 @@
-function [ disparity ] = plane_sweeping(I1, I2, P1, P2, range_depth, size_window, cost_function, step_depth)
+function [ I_depth ] = plane_sweeping( I,P1,P2,window_size,threshold,matching_function,plot_im_matching )
 
-
-r_window = ceil(size_window/2) - 1;
-sampling_depth = range_depth(1):step_depth:range_depth(2);
-[heigth, width] = size(I2);
-
-% In third dimension, first value is for disparity/depth and second for min
-% cost
-switch cost_function
-    case 'SSD'
-        disparity_computation = Inf*ones([heigth width 2]);
-    case 'NCC'
-        disparity_computation = -Inf*ones([heigth width 2]);   
+weights = ones(window_size)/window_size.^2;
+[rows,cols] = size(I{1});
+corners = [1, cols, 1, rows];
+I_depth = inf(rows,cols);
+best_matching = inf(rows,cols);
+if strcmpi(matching_function,'NCC')
+    best_matching=-best_matching;
 end
-for k = 1:length(sampling_depth)
-    % Compute the homography that relates the two images
-    kk = sampling_depth(k);
-    PI = P1(3, :) - [0 0 0 kk];
-    A = pinv([P1; PI]);
-    A_hat = A(:, 1:3);
-    H = P2*A_hat;
-    % Take into account those points that fall inside the area of the other
-    % image
-    corners = [1 width 1 heigth]; 
-    I_reprojected = apply_H_v2(I2, pinv(H), corners);
-
-    %For each point in the image
-    for i = 1:heigth
-        for j = 1:width
-            window_left = I1(max(i - r_window, 1 + r_window):...
-                min(i + r_window, heigth - r_window),...
-            max(j - r_window, 1 + r_window):...
-            min(j + r_window, width - r_window));
-        
-            window_right  = I_reprojected(max(i - r_window, 1 + r_window):...
-                min(i + r_window, heigth - r_window),...
-            max(j - r_window, 1 + r_window):...
-            min(j + r_window, width - r_window));
-        
-            size_block = size(window_right);
+pad = floor(window_size/2);
+I_1 = padarray(I{1},[pad,pad],'replicate');
+for depth=1:20
+    fronto_parallel_plane = (P2(3,:)-[0,0,0,depth])';
+    
+    A = inv([P2; fronto_parallel_plane']);
+    H = P1*A(:,1:3);
+    
+    I_2projected = apply_H_v2(I{2}, H, corners);
+    if plot_im_matching
+        auxI = repmat(I{1},[1,1,2]);
+        auxI(:,:,3) = I_2projected;
+        imshow(auxI);
+        title(['d_', num2str(depth)]);
+        pause
+    end
+    
+    I_2projected = padarray(I_2projected,[pad,pad],'replicate');
+    I_2projected(I_2projected==0)=Inf;
+    matching = zeros(rows,cols);
+    for i=1+pad:rows+pad
+        cur_I1row = zeros(window_size,window_size,cols);
+        cur_I2row = zeros(window_size,window_size,cols);
+        for wj=1:window_size
+            cur_I1row(:,wj,:) = permute(I_1(i-pad:i+pad,wj:cols+(2*pad)-window_size+wj),[1,3,2]);
+            cur_I2row(:,wj,:) = permute(I_2projected(i-pad:i+pad,wj:cols+(2*pad)-window_size+wj),[1,3,2]);
+        end
+        if strcmpi(matching_function,'SSD')
+            matching(i-pad,:) = permute(sum(sum(weights.*(cur_I1row-cur_I2row).^2,1),2),[1,3,2]);
+        elseif strcmpi(matching_function,'NCC')
+            sum_I1_row = sum(sum(weights .* cur_I1row,1),2);
+            sum_I2_row = sum(sum(weights .* cur_I2row,1),2);
             
-            weights = (1/(sum(size_block)))*ones(size_block);
-            switch cost_function
-                case 'SSD'
-                    ssd = sum(sum(weights.*double((window_left-window_right).^2)));
-                        if ssd < disparity_computation(i, j, 2)
-                            disparity_computation(i, j, 1) = kk;
-                            disparity_computation(i, j, 2) = ssd;
-                        end
-                case 'NCC'
-                    sum_left = sum(window_left(:).*weights(:));
-                    sum_right = sum(window_right(:).*weights(:));
-
-                    sigma_left = sqrt(sum( weights(:).* (window_left(:) - sum_left).^2 ));
-                    sigma_right = sqrt(sum( weights(:).* (window_right(:) - sum_right).^2 ));
-
-                    ncc = sum( weights(:).*(window_left(:)-sum_left).*(window_right(:)-sum_right) )/(sigma_left*sigma_right);
-                   
-                    if ncc > disparity_computation(i, j, 2)
-                        disparity_computation(i, j, 1) = kk;
-                        disparity_computation(i, j, 2) = ncc;
-                    end
-            end            
+            sigma_1 = sqrt(sum(sum(weights .* (cur_I1row - sum_I1_row).^2,1),2));
+            sigma_2 = sqrt(sum(sum(weights .* (cur_I2row - sum_I2_row).^2,1),2));
+            
+           
+            aux = sum(sum(weights .* (cur_I1row - sum_I1_row) .* (cur_I2row - sum_I2_row), 1), 2) ./ (sigma_1.*sigma_2);
+            matching(i-pad,:)=aux;
         end
     end
+    
+    if strcmpi(matching_function,'SSD')
+        I_depth(best_matching > matching & matching < threshold) = depth;
+        best_matching(best_matching > matching & matching < threshold) = matching(best_matching > matching & matching < threshold);
+    elseif strcmpi(matching_function,'NCC')
+        I_depth(best_matching < matching & matching > threshold) = depth;
+        best_matching(best_matching < matching & matching > threshold) = matching(best_matching < matching & matching > threshold);
+    end
 end
-
-disparity = disparity_computation(:, :, 1);
-
+I_depth(I_depth==Inf | I_depth==-Inf)=0;
 end
