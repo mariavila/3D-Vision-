@@ -24,7 +24,7 @@ function [disparity] = stereo_computation(left_image,right_image, min_disparity,
     weights = zeros(window_size);
     weights(:) = 1/(window_size * window_size);
 
-    gam_col = 12;
+    gam_col = 15;
     gam_pos = window_size/2;
     T = 40;
     for row = 1+padding:left_rows+padding
