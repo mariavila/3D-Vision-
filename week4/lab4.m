@@ -306,7 +306,7 @@ im_right = imread('Data/scene1.row3.col4.ppm');
 im_right = rgb2gray(im_right);
 
 % Add  library paths
-basedir='~/UGM/';
+basedir='UGM/';
 addpath(basedir);
 
 %Set model parameters
@@ -334,6 +334,27 @@ imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Depth computation with Plane Sweeping
+scale_factor = 0.4;
+
+I_scaled{1} = imresize(I{1}, scale_factor);
+I_scaled{2} = imresize(I{2}, scale_factor);
+
+P1_scaled = P1;
+P2_scaled = P2;
+P1_scaled(1:2, :) = P1_scaled(1:2, :)*scale_factor;
+P2_scaled(1:2, :) = P2_scaled(1:2, :)*scale_factor;
+
+range_depth = [1 15];
+step_depth = 0.5;
+size_window = 17;
+cost_function = 'NCC';
+
+disparity = plane_sweeping(I_scaled{1}, I_scaled{2}, P1, P2, range_depth, size_window, cost_function, step_depth);
+
+figure,
+imshow(disparity,[])
+
+
 
 % Implement the plane sweeping method explained in class.
 
@@ -348,6 +369,7 @@ imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation');
 % 1. Use the set of facade images 00xx_s.png to compute depth maps 
 % corresponding to different views (and optionally from different pairs of 
 % images for the same view).
+
 % 2. Then convert each depth map to a signed distance function defined in 
 % a disretized volume (using voxels).
 % 3. Average the different signed distance functions, the resulting 
@@ -362,6 +384,15 @@ imshow(im_lbp/255, []);xlabel('Loopy Belief Propagation');
 % (mandatory task) together with the following rectification method which 
 % has an online demo available: 
 % http://demo.ipol.im/demo/m_quasi_euclidean_epipolar_rectification/
+
+im_1 = rgb2gray(imread('Data/0001_s.png'));
+im_2 = rgb2gray(imread('Data/0002_s.png'));
+im_3 = rgb2gray(imread('Data/0003_s.png'));
+
+disp_1_2 = stereo_computationv2(im_1, im_2, 0, 16, 9, 'NCC', 'ones');
+disp_2_3 = stereo_computationv2(im_2, im_3, 0, 16, 9, 'NCC', 'ones');
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
