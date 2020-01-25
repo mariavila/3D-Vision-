@@ -110,9 +110,36 @@ def refine_matches(x1, x2, F):
     return xr1.T, xr2.T 
 
 def search_more_matches(out1, out2, F):
-    # your code here
+    # look for new matches
+    # TODO implement a search for new inliers based on epipolar
+    # error given by F (MVG, Alg 11.4 (v)). Set the maximum error that an inlier may
+    # throw on the epipolar equation to 0.00155
+    # Returns: 
+    #   xn1, xn2: new inliers
+    #   o1, o2: still outliers
+    max_error = 0.00155
+    n_out = np.shape(out1)[0]
+    
+    xn1 = []
+    xn2 = []
+    ou1 = []
+    ou2 = []
+    eo1 = np.ones((n_out, 3))
+    eo1[:, :2] = out1
+    eo2 = np.ones((n_out, 3))
+    eo2[:, :2] = out2
+    
+    error = np.dot(np.dot(eo1, F), np.transpose(eo2)).diagonal()
+    mask = np.abs(error)<max_error
+    correct_args = np.where(mask==1)
+    xn1 = out1[correct_args]
+    xn2 = out2[correct_args]
+    still_outliers = np.where(mask==0)
+    ou1 = out1[still_outliers]
+    ou2 = out2[still_outliers]
 
-    return xn1, xn2, out1, out2
+    return xn1, xn2, ou1, ou2
+
 
 def make_homogeneous(p):
     if p.shape[1] != 2 : 
