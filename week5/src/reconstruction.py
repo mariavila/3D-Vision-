@@ -7,7 +7,16 @@ import maths as mth
 def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
     # your code here
-
+    v = np.zeros(3)
+    lamb = 1
+    u,d,v = np.linalg.svd(np.transpose(F))
+    ep = v[:,-1]
+    ep = ep/ep[2]
+    ep_x = np.array([[0, -ep[2], ep[1]],
+                     [ep[2], 0, -ep[0]],
+                     [-ep[1], ep[0], 0]])
+    P = np.c_[np.dot(ep_x,F), lamb*ep]
+    print(P)
     return P
 
 def estimate_3d_points(P1, P2, xr1, xr2):
