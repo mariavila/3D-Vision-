@@ -9,7 +9,7 @@ class Track:
         self.ref_views = {} # dictionary: {#cam, 2d point}. Refined views according to F
         self.views[img] = view
         self.ref_views[img] = rview
-        hs_vs[view] = self 
+        hs_vs[view] = self
 
         self.pt = np.zeros(4, dtype=np.float32)
         if pt is not None:
@@ -22,11 +22,11 @@ class Track:
         #    print("refined view[",key,"]: ", rview)
         if hs_vs is not None:
             # The addition to the hash table is done here
-            hs_vs[view] = self 
+            hs_vs[view] = self
             if h.debug > 2:
                 print("    hs_vs added to Track")
 
-        if img not in self.views: 
+        if img not in self.views:
             # self doesn't have a view in img
             self.views[img] = view
             self.ref_views[img] = rview
@@ -53,16 +53,16 @@ class Track:
     def is_in_views(self, img):
         if img not in self.views:
             return False
-        else: 
+        else:
             return True
 
     def is_in_views(self, view, img):
         if is_in_views(img):
             if view is self.views[img]:
                 return True
-            else: 
+            else:
                 return False
-        else: 
+        else:
             return False
 
     def deal_with_conflicts(self, v1, v2):
@@ -92,8 +92,8 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
         if h.debug > 2:
             print ("x1 is in hs_vs?", fi_is_v)
             print ("x2 is in hs_vs?", fj_is_v)
-            
-        if not fi_is_v and not fj_is_v: 
+
+        if not fi_is_v and not fj_is_v:
             # create a new view and add the matches to it and to the hash table of tracks
             v = Track(tfi, tuple(rfi), i, hs_vs)
             v.add_view(tfj, tuple(rfj), j, hs_vs)
@@ -105,13 +105,13 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
                     print("view[",key,"]: ",view)
                 for key, rview in v.ref_views.items():
                     print("refined view[",key,"]: ", rview)
-        elif not fi_is_v: 
+        elif not fi_is_v:
             # retrieve the view and add the orphan to it and to the hash table
             v = hs_vs[tfj]
             v.add_view(tfi, tuple(rfi), i, hs_vs)
             if h.debug > 2:
                 print ("view 1 added")
-        elif not fj_is_v: 
+        elif not fj_is_v:
             # retrieve the view and add the orphan to it and to the hash table
             v = hs_vs[tfi]
             v.add_view(tfj, tuple(rfj), j, hs_vs)
@@ -119,7 +119,7 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
                 print ("view 2 added")
         else:
             # both are in hash table
-            if hs_vs[tfi] is not hs_vs[tfj]: 
+            if hs_vs[tfi] is not hs_vs[tfj]:
                 # They are different tracks: merge their views into one and update the hash table
                 v = hs_vs[tfi]
                 w = hs_vs[tfj]
@@ -141,4 +141,4 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
 
 def add_pts_tracks(Xaff, x1, x2, tracks, hs_vs):
     # your code here
-
+    return 

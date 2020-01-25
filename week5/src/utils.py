@@ -3,7 +3,7 @@ import cv2
 
 import numpy as np
 # render 2d/3d plots
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Keep global variables at minimum
@@ -11,17 +11,17 @@ from mpl_toolkits.mplot3d import Axes3D
     # -1: QUIET, don't print anything
     #  0: NORMAL, show steps performed
     #  1: INFO, show values for different methods
-    #  2: VERBOSE, show relevant matrices of pipeline 
+    #  2: VERBOSE, show relevant matrices of pipeline
     #  3: INSANE, show all values of data structures
-debug = -1 
+debug = -1
 
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays
 
 debug_display = True
-normalise = True #Activate coordinate normalisation 
+normalise = True #Activate coordinate normalisation
 opencv = False #Whether use opencv or matplot to display images
-path_imgs="C:/Users/Sara/Documents/GitHub/3D-Vision-/week5/dataset/"
+path_imgs="../dataset/"
 
 def read_image(n):
     #Read an image from file. This method assumes images are a numbered sequence
@@ -70,7 +70,7 @@ def draw_lines(img1, img2, lines, x1, x2):
         #cv2.imshow('epipolar lines and matches at img1', img1)
         #cv2.imshow('epipolar lines and matches at img2', img2)
         ## ASCII(space) = 32
-        #key = cv2.waitKey(0) & 0xFF 
+        #key = cv2.waitKey(0) & 0xFF
 
     return img1,img2
 
@@ -116,7 +116,7 @@ def display_epilines(img1, img2, x1, x2, F):
         plt.subplot(122),plt.imshow(img5)
         plt.show()
 
-    
+
 def show_matches(img1, img2, x1, x2):
     # Draw matches between two images
     cv2.namedWindow('matches at img1', cv2.WINDOW_NORMAL)
@@ -151,4 +151,3 @@ def display_3d_points(v):
     ax.set_ylabel('y')
     ax.set_zlabel('z')
     plt.show()
-
