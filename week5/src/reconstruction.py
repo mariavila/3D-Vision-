@@ -16,7 +16,7 @@ def compute_proj_camera(F, i):
                      [ep[2], 0, -ep[0]],
                      [-ep[1], ep[0], 0]])
     P = np.c_[np.dot(ep_x,F), lamb*ep]
-    print(P)
+
     return P
 
 def estimate_3d_points(P1, P2, xr1, xr2):
