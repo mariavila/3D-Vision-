@@ -1,6 +1,7 @@
 import sys
 import cv2
 
+import numpy as np
 # render 2d/3d plots
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
@@ -17,10 +18,10 @@ debug = -1
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays
 
-debug_display = False
+debug_display = True
 normalise = True #Activate coordinate normalisation 
 opencv = False #Whether use opencv or matplot to display images
-path_imgs="<path_to>/castle_dense_large/urd/"
+path_imgs="C:/Users/Sara/Documents/GitHub/3D-Vision-/week5/dataset/"
 
 def read_image(n):
     #Read an image from file. This method assumes images are a numbered sequence
@@ -110,6 +111,7 @@ def display_epilines(img1, img2, x1, x2, F):
                 cv2.destroyWindow('epipolar lines and matches at img2')
                 break
     else:
+        plt.figure()
         plt.subplot(121),plt.imshow(img3)
         plt.subplot(122),plt.imshow(img5)
         plt.show()
@@ -133,6 +135,7 @@ def show_matches(img1, img2, x1, x2):
                 cv2.destroyWindow('matches at img2')
                 break
     else:
+        plt.figure()
         plt.subplot(121),plt.imshow(img3)
         plt.subplot(122),plt.imshow(img4)
         plt.show()
