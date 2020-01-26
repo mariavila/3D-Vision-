@@ -38,7 +38,8 @@ def compute_reproj_error(X, cam):
 
 def transform(aff_hom, Xprj, cams_pr):
     # your code here
-
+    cams_aff = np.dot(cams_pr,np.linalg.inv(aff_hom.T))
+    Xaff = np.dot(aff_hom, Xprj)
     return Xaff, cams_aff
 
 def resection(tracks, img):
