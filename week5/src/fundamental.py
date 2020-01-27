@@ -34,7 +34,7 @@ def compute_fundamental(p1, p2, eight_alg):
         # make coordinates homogeneous:
         p1h = make_homogeneous(p1)
         p2h = make_homogeneous(p2)
-        # normalise coordinates 
+        # normalise coordinates
         p1_norm, p2_norm, T1, T2 = normalise_coord(p1h, p2h)
         #tolerance normalised for RANSAC method (not used by LMEDS, left for
         #compatibility with normalise=False path)
@@ -53,9 +53,9 @@ def compute_fundamental(p1, p2, eight_alg):
 
     if h.normalise:
         # denormalise F
-        F = T2.T@F@T1 
+        F = T2.T@F@T1
         F = F / F[2][2]
-  
+
     if h.debug >= 0:
         print('    Fundamental Matrix estimated')
     if (h.debug > 1):
@@ -65,7 +65,7 @@ def compute_fundamental(p1, p2, eight_alg):
 
 def apply_mask(x1, x2, mask, F):
     # use F mask for filtering out outliers
-    if h.debug > 2: 
+    if h.debug > 2:
         print("before F mask:\n")
         xh1 = make_homogeneous(x1)
         xh2 = make_homogeneous(x2)
@@ -75,7 +75,7 @@ def apply_mask(x1, x2, mask, F):
     x1 = x1[mask.ravel()==1]
     x2 = x2[mask.ravel()==1]
 
-    if h.debug > 2: 
+    if h.debug > 2:
         print("after F mask:\n")
         xh1 = make_homogeneous(x1)
         xh2 = make_homogeneous(x2)
@@ -90,7 +90,7 @@ def apply_mask(x1, x2, mask, F):
 
 def refine_matches(x1, x2, F):
     # use the optimal triangulation method (Algorithm 12.1 from MVG)
-    nx1, nx2 = cv2.correctMatches(F, np.reshape(x1, (1, -1, 2)), np.reshape(x2, (1, -1, 2))) 
+    nx1, nx2 = cv2.correctMatches(F, np.reshape(x1, (1, -1, 2)), np.reshape(x2, (1, -1, 2)))
 
     # get the points back in matrix configuration
     xr1 = np.float32(np.reshape(nx1,(-1, 2)))
@@ -99,7 +99,7 @@ def refine_matches(x1, x2, F):
     if h.debug >= 0:
         print("  Matches corrected with Optimal Triangulation Method")
 
-    if h.debug > 2: 
+    if h.debug > 2:
         print ("xr1: \n", xr1)
         print ("xr2: \n", xr2)
         print("after correctMatches: ")
@@ -107,19 +107,19 @@ def refine_matches(x1, x2, F):
         xrh2 = make_homogeneous(xr2)
         print_epipolar_eq(xrh1, xrh2, F)
 
-    return xr1.T, xr2.T 
+    return xr1.T, xr2.T
 
 def search_more_matches(out1, out2, F):
     # look for new matches
     # TODO implement a search for new inliers based on epipolar
     # error given by F (MVG, Alg 11.4 (v)). Set the maximum error that an inlier may
     # throw on the epipolar equation to 0.00155
-    # Returns: 
+    # Returns:
     #   xn1, xn2: new inliers
     #   o1, o2: still outliers
     max_error = 0.00155
     n_out = np.shape(out1)[0]
-    
+
     xn1 = []
     xn2 = []
     ou1 = []
@@ -128,8 +128,9 @@ def search_more_matches(out1, out2, F):
     eo1[:, :2] = out1
     eo2 = np.ones((n_out, 3))
     eo2[:, :2] = out2
-    
-    error = np.dot(np.dot(eo1, F), np.transpose(eo2)).diagonal()
+
+    error = (eo2 @ F @ eo1.T).diagonal()
+    # error = np.dot(np.dot(np.transpose(eo1), F), eo2).diagonal()
     mask = np.abs(error)<max_error
     correct_args = np.where(mask==1)
     xn1 = out1[correct_args]
@@ -142,15 +143,15 @@ def search_more_matches(out1, out2, F):
 
 
 def make_homogeneous(p):
-    if p.shape[1] != 2 : 
+    if 2 not in p.shape:
         print ("WARNING - Coordinates have ", p.shape, " dimensions: not made homogeneous")
         return p
-    
-    # Add homogeneous coordinates 
+
+    # Add homogeneous coordinates
     hom_c = np.ones_like(p[:, 1], dtype=np.float32)
     p = np.c_[p, hom_c]
 
-    # Perhaps is quicker to use opencv implementation, but it's 
+    # Perhaps is quicker to use opencv implementation, but it's
     # cumbersome... seems to use lists
     #p = np.reshape(cv2.convertPointsToHomogeneous(p), (-1, 3))
 

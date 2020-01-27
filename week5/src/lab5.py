@@ -1,7 +1,7 @@
-# Week 5. 3D reconstruction from N non calibrated cameras. 
-# This exercise implements a vanilla version of Structure from Motion technique. 
+# Week 5. 3D reconstruction from N non calibrated cameras.
+# This exercise implements a vanilla version of Structure from Motion technique.
 
-# Use python3 to execute this programme: 
+# Use python3 to execute this programme:
 #    $ python3 lab5.py <number of images to process>
 
 import sys
@@ -33,9 +33,9 @@ def main(argv):
     imgs = []        # list of images
     feats = []       # list of features
     matches = []     # list of dictionaries
-    tracks = []      # list of tracking views 
+    tracks = []      # list of tracking views
     hs_vs = {}       # dictionary as hash table of views-tracks
-    vps = []         # list of vanishing points 
+    vps = []         # list of vanishing points
     cams_pr = []     # list of projective cameras
     cams_aff = []    # list of affine cameras
     cams_euc = []    # list of euclidean cameras
@@ -74,7 +74,7 @@ def main(argv):
                 if h.debug >= 0:
                     print ("  Using epipolar constraint to find more matches")
                 # Prepare variables to be used in the iteration
-                incr_match = 1   
+                incr_match = 1
                 eight_alg = False
                 # inliers
                 x1 = m_ijf[0]
@@ -92,12 +92,17 @@ def main(argv):
                     # TODO implement a search for new inliers based on epipolar
                     # error given by F (MVG, Alg 11.4 (v)). Set the maximum error that an inlier may
                     # throw on the epipolar equation to 0.00155
-                    # Returns: 
+                    # Returns:
                     #   xn1, xn2: new inliers
                     #   o1, o2: still outliers
                     xn1, xn2, o1, o2 = fd.search_more_matches(o1, o2, F)
+                    # xn1, xn2, o1, o2 = fd.search_more_matches(o1, o2, F)
 
                     # join the new matches to the inliers
+                    # x1 = xs1
+                    # x2 = xs2
+                    # incr_match = 0
+
                     x1 = np.concatenate((xs1, xn1), axis=0)
                     x2 = np.concatenate((xs2, xn2), axis=0)
                     incr_match = xn1.shape[0]
@@ -125,10 +130,10 @@ def main(argv):
             # compute projective cameras to use in projective reconstruction
             if i == 1:
             # TODO Compute the projective camera given F, according to
-            # Result 9.15 of MVG (v = 0, lambda = 1). 
+            # Result 9.15 of MVG (v = 0, lambda = 1).
                 cams_pr.append(rc.compute_proj_camera(F, i))
             else:
-            # TODO Compute resection as in MVG, Alg 7.1 
+            # TODO Compute resection as in MVG, Alg 7.1
                 cams_pr.append(rc.resection(tracks, i))
             if h.debug >= 0:
                 print("  Resection of camera", i, "performed")
@@ -144,14 +149,14 @@ def main(argv):
                 print('  Projective 3D points added to tracks')
 
             # TODO compute projective reprojection error
-            error_prj = compute_reproj_error(Xprj, cams_pr)
+            error_prj = rc.compute_reproj_error(Xprj, cams_pr[i - 1], cams_pr[i], xr1, xr2)
             if h.debug >0:
                 print("    Projective reprojection error:", error_prj)
-            
+
             # Affine rectification
             vps.append(vp.estimate_vps(imgs[i]))
             # TODO Estimate homografy that makes an affine rectification
-            # With the vanishing points, the plane at the infinity is computed. 
+            # With the vanishing points, the plane at the infinity is computed.
             # Then  the affine homography is built with the coordinates of the infinity plane
             aff_hom = ac.estimate_aff_hom(cams_pr[i-1:], vps[i-1:])
             # TODO Transform 3D points and cameras to affine space
@@ -161,9 +166,9 @@ def main(argv):
             tk.add_pts_tracks(Xaff, x1, x2, tracks, hs_vs)
             if h.debug >= 0:
                 print('  Affine 3D points added to tracks')
-            
+
             # TODO compute affine reprojection error (reuse your code)
-            error_aff = compute_reproj_error(Xaff, cams_aff)
+            error_aff = rc.compute_reproj_error(Xaff, cams_aff[i -1], cams_aff[i], xr1, xr2)
             if h.debug >0:
                 print("    Affine reprojection error:", error_aff)
 
@@ -172,16 +177,16 @@ def main(argv):
             # homography from vanishing points and the camera constrains skew = 0,
             # squared pixels. Then perform the transformation to Euclidean space
             # (reuse your code)
-            euc_hom = ac.estimate_euc_hom(cams_aff[i], vps[i])
+            euc_hom = ac.estimate_euc_hom(cams_aff[i - 1:], vps[i-1:])
             Xeuc, cams_euc = rc.transform(euc_hom, Xaff, cams_aff)
 
             # TODO Add estimated 3d euclidean points to tracks (reuse your code)
             tk.add_pts_tracks(Xeuc, x1, x2, tracks, hs_vs)
             if h.debug >= 0:
                 print('  Euclidean 3D points added to tracks')
-            
+
             # TODO compute metric reprojection error (reuse your code)
-            error_euc = compute_reproj_error(Xeuc, cams_euc)
+            error_euc = rc.compute_reproj_error(Xeuc, cams_euc[i -1], cams_euc[i], xr1, xr2)
             if h.debug >0:
                 print("    Euclidean reprojection error:", error_euc)
 
@@ -208,18 +213,18 @@ Optional tasks
       p332, result 10.3 p271)
     - Perform Bundle Adjustment over the estimation of the vanishing points and
       all available images, with PySBA
-    - Implement a more sophisticated resection method: 
-        -Xiao-Shan Gao, Xiao-Rong Hou, Jianliang Tang, and Hang-Fei Cheng. 
-         Complete solution classification for the perspective-three-point problem. 
+    - Implement a more sophisticated resection method:
+        -Xiao-Shan Gao, Xiao-Rong Hou, Jianliang Tang, and Hang-Fei Cheng.
+         Complete solution classification for the perspective-three-point problem.
          Pattern Analysis and Machine Intelligence, IEEE Transactions on, 25(8):930–943, 2003
-        -Tong Ke and Stergios Roumeliotis. An efficient algebraic solution to the perspective-three-point 
+        -Tong Ke and Stergios Roumeliotis. An efficient algebraic solution to the perspective-three-point
          problem. In Computer Vision and Pattern Recognition (CVPR), 2017 IEEE Conference on. IEEE, 2017
     - Investigate better implementations for the "tracks" structure
     - Investigate strategies to improve the pipeline:
             -in results: number of points, reprojection error, camera poses
             -in implementation: time of computation, resources, etc.
-      Reference papers for improvement strategies: 
-            -J. L. Schönberger and J. Frahm, "Structure-from-Motion Revisited," 2016 IEEE Conference 
+      Reference papers for improvement strategies:
+            -J. L. Schönberger and J. Frahm, "Structure-from-Motion Revisited," 2016 IEEE Conference
              on Computer Vision and Pattern Recognition (CVPR), Las Vegas, NV, 2016, pp. 4104-4113.
 """
 

@@ -1,5 +1,5 @@
 # vanishing points
-import vp_detection as vp 
+import vp_detection as vp
 
 import utils as h
 
@@ -14,11 +14,11 @@ def estimate_vps(img):
         print ("  Vanishing points found")
     if h.debug > 1:
         print ("      vps coordinates:\n", vpd.vps_2D )
-    if h.debug > 2: 
-        print ("      length threshold:", length_thresh)
-        print ("      principal point:", principal_point)
-        print ("      focal length:", focal_length)
-        print ("      seed:", seed)
+    # if h.debug > 2:
+    #     print ("      length threshold:", length_thresh)
+    #     print ("      principal point:", principal_point)
+    #     print ("      focal length:", focal_length)
+    #     print ("      seed:", seed)
 
     return vpd.vps_2D
 
