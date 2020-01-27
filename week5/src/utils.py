@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
     #  1: INFO, show values for different methods
     #  2: VERBOSE, show relevant matrices of pipeline
     #  3: INSANE, show all values of data structures it breaks tho
-debug = 2
+debug = 0
 
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays

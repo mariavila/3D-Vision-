@@ -14,27 +14,27 @@ def estimate_aff_hom(cams, vps):
 
     #find 3D coordinates by triangulation
     vp_3d = rc.estimate_3d_points(P1, P2, vps1.T, vps2.T)
-    u,d,v = np.linalg.svd(np.transpose(vp_3d))
-    p = 1*v[:,-1]
+    u,d,v = np.linalg.svd(vp_3d.T)
+    p = 1*v.T[:,-1]
     p = p / p[-1]
     aff_hom = np.array([[1,0,0,0],
                         [0,1,0,0],
                         [0,0,1,0],
                         [p[0],p[1],p[2],1]])
 
-    return aff_hom
+    return vp_3d, aff_hom
 
 
-def estimate_euc_hom(cams,vps):
+def estimate_euc_hom(cams, vp_3d):
     P1 = cams[0]
     P2 = cams[1]
 
-    vps1 = vps[0]
-    vps2 = vps[1]
-
-    #find 3D coordinates by triangulation
-    vp_3d = rc.estimate_3d_points(P1, P2, vps1.T, vps2.T)
-    vp_3d = vp_3d.T
+#    vps1 = vps[0]
+#    vps2 = vps[1]
+#
+#    #find 3D coordinates by triangulation
+#    vp_3d = rc.estimate_3d_points(P1, P2, vps1.T, vps2.T)
+#    vp_3d = vp_3d.T
     u = vp_3d[0]
     v = vp_3d[1]
     z = vp_3d[1]
@@ -44,16 +44,21 @@ def estimate_euc_hom(cams,vps):
                   [0,1,0,0,0,0],
                   [1,0,0,-1,0,0]])
     u,d,v = np.linalg.svd(A)
-    w = v[:,-1]
+    w = v.T[:,-1]
     w_arr = np.array([[w[0], w[1], w[2]],
                       [w[1], w[3], w[4]],
                       [w[2], w[4], w[5]]])
+
     M = P2[:3,:3]
-    prod = np.linalg.inv(np.dot(np.dot(np.linalg.inv(M),w_arr),M))
+    prod = np.linalg.inv(M.T @ w_arr @ M)
     A = np.linalg.cholesky(prod)
-    A_it = np.linalg.inv(A.T)
-    H_metric = np.array([[A_it[0,0],A_it[0,1],A_it[0,2], 0],
-                  [A_it[1,0], A_it[1,1], A_it[1,2], 0],
-                  [A_it[2,0], A_it[2,1], A_it[2,2], 0],
-                  [0, 0, 0, 1]])
+#    A_it = np.linalg.inv(A.T)
+#    H_metric = np.array([[A_it[0,0],A_it[0,1],A_it[0,2], 0],
+#                  [A_it[1,0], A_it[1,1], A_it[1,2], 0],
+#                  [A_it[2,0], A_it[2,1], A_it[2,2], 0],
+#                  [0, 0, 0, 1]])
+    H_metric = np.array([[A[0,0],A[0,1],A[0,2], 0],
+                         [A[1,0], A[1,1], A[1,2], 0],
+                         [A[2,0], A[2,1], A[2,2], 0],
+                         [0, 0, 0, 1]])
     return H_metric

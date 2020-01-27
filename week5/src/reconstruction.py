@@ -8,11 +8,11 @@ from fundamental import make_homogeneous
 def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
     # your code here
-    v = np.zeros(3)
     lamb = 1
     u,d,v = np.linalg.svd(F.T)
-    ep = v[:,-1]
-    ep = ep/ep[2]
+    ep = v.T[:,-1]
+    ep = ep/ep[-1]
+    
     ep_x = np.array([[0, -ep[2], ep[1]],
                      [ep[2], 0, -ep[0]],
                      [-ep[1], ep[0], 0]])
@@ -46,10 +46,13 @@ def compute_reproj_error(xproj, cam1, cam2, x1, x2):
 
 def transform(aff_hom, Xprj, cams_pr):
     # your code here
-    cams_aff = np.dot(cams_pr,np.linalg.inv(aff_hom.T))
+    #cams_pr1 = cams_pr[0]
+    
+    cams_aff = cams_pr @ np.linalg.inv(aff_hom)
 
-    Xaff = np.dot(aff_hom, Xprj)
-    Xaff = Xaff / Xaff[3, :]
+    #Xaff = np.linalg.inv(aff_hom) @ Xprj
+    Xaff = aff_hom @ Xprj
+    Xaff = Xaff / Xaff[-1, :]
 
     return Xaff, cams_aff
 
