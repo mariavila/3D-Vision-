@@ -53,8 +53,17 @@ def transform(aff_hom, Xprj, cams_pr):
 
     return Xaff, cams_aff
 
-def resection(tracks, img):
+def resection(tracks, n_img):
+    pts_3d = []
+    pts = []
+    for t in tracks:
+        if n_img - 1 in t.ref_views:
+            if t.pt.sum() != 0:
+                pts_3d.append(t.pt)
+                pts.append(t.ref_views[n_img - 1])
+
+    import ipdb; ipdb.set_trace()  # BREAKPOINT
     # your code here
 
 
-    return P
+    return pts_3d

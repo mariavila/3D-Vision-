@@ -140,5 +140,8 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
             #    v.add_view(tfj, tuple(rfj), j)
 
 def add_pts_tracks(Xaff, x1, x2, tracks, hs_vs):
-    # your code here
-    return 
+
+    for i, (pt1, pt2) in enumerate(zip(x1, x2)):
+        if tuple(pt1.tolist()) in hs_vs and tuple(pt2.tolist()) in hs_vs:
+            hs_vs[tuple(pt1.tolist())].pt = Xaff[:, i]
+            hs_vs[tuple(pt2.tolist())].pt = Xaff[:, i]

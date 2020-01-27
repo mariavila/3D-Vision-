@@ -154,55 +154,55 @@ def main(argv):
                 print("    Projective reprojection error:", error_prj)
 
             # Affine rectification
-            vps.append(vp.estimate_vps(imgs[i]))
-            # TODO Estimate homografy that makes an affine rectification
-            # With the vanishing points, the plane at the infinity is computed.
-            # Then  the affine homography is built with the coordinates of the infinity plane
-            aff_hom = ac.estimate_aff_hom(cams_pr[i-1:], vps[i-1:])
-            # TODO Transform 3D points and cameras to affine space
-            Xaff, cams_aff = rc.transform(aff_hom, Xprj, cams_pr)
+            # vps.append(vp.estimate_vps(imgs[i]))
+            # # TODO Estimate homografy that makes an affine rectification
+            # # With the vanishing points, the plane at the infinity is computed.
+            # # Then  the affine homography is built with the coordinates of the infinity plane
+            # aff_hom = ac.estimate_aff_hom(cams_pr[i-1:], vps[i-1:])
+            # # TODO Transform 3D points and cameras to affine space
+            # Xaff, cams_aff = rc.transform(aff_hom, Xprj, cams_pr)
 
-            # TODO Add estimated 3d affine points to tracks (reuse your code)
-            tk.add_pts_tracks(Xaff, x1, x2, tracks, hs_vs)
-            if h.debug >= 0:
-                print('  Affine 3D points added to tracks')
+            # # TODO Add estimated 3d affine points to tracks (reuse your code)
+            # tk.add_pts_tracks(Xaff, x1, x2, tracks, hs_vs)
+            # if h.debug >= 0:
+            #     print('  Affine 3D points added to tracks')
 
-            # TODO compute affine reprojection error (reuse your code)
-            error_aff = rc.compute_reproj_error(Xaff, cams_aff[i -1], cams_aff[i], xr1, xr2)
-            if h.debug >0:
-                print("    Affine reprojection error:", error_aff)
+            # # TODO compute affine reprojection error (reuse your code)
+            # error_aff = rc.compute_reproj_error(Xaff, cams_aff[i -1], cams_aff[i], xr1, xr2)
+            # if h.debug >0:
+            #     print("    Affine reprojection error:", error_aff)
 
             # Metric rectification
             # TODO Perform Metric rectification. First compute the transforming
             # homography from vanishing points and the camera constrains skew = 0,
             # squared pixels. Then perform the transformation to Euclidean space
             # (reuse your code)
-            euc_hom = ac.estimate_euc_hom(cams_aff[i - 1:], vps[i-1:])
-            Xeuc, cams_euc = rc.transform(euc_hom, Xaff, cams_aff)
+            # euc_hom = ac.estimate_euc_hom(cams_aff[i - 1:], vps[i-1:])
+            # Xeuc, cams_euc = rc.transform(euc_hom, Xaff, cams_aff)
 
-            # TODO Add estimated 3d euclidean points to tracks (reuse your code)
-            tk.add_pts_tracks(Xeuc, x1, x2, tracks, hs_vs)
-            if h.debug >= 0:
-                print('  Euclidean 3D points added to tracks')
+            # # TODO Add estimated 3d euclidean points to tracks (reuse your code)
+            # tk.add_pts_tracks(Xeuc, x1, x2, tracks, hs_vs)
+            # if h.debug >= 0:
+            #     print('  Euclidean 3D points added to tracks')
 
-            # TODO compute metric reprojection error (reuse your code)
-            error_euc = rc.compute_reproj_error(Xeuc, cams_euc[i -1], cams_euc[i], xr1, xr2)
-            if h.debug >0:
-                print("    Euclidean reprojection error:", error_euc)
+            # # TODO compute metric reprojection error (reuse your code)
+            # error_euc = rc.compute_reproj_error(Xeuc, cams_euc[i -1], cams_euc[i], xr1, xr2)
+            # if h.debug >0:
+            #     print("    Euclidean reprojection error:", error_euc)
 
             # Bundle Adjustment
             # TODO Adapt cameras and 3D points to PySBA format
-            cams_ba, X_ba, x_ba, cam_idxs, x_idxs = ba.adapt_format_pysba(tracks)
-            badj = ba.PySBA(cams_ba, X_ba, x_ba, cam_idxs, x_idxs)
-            cams_euc, Xeuc = badj.bundleAdjust()
+            # cams_ba, X_ba, x_ba, cam_idxs, x_idxs = ba.adapt_format_pysba(tracks)
+            # badj = ba.PySBA(cams_ba, X_ba, x_ba, cam_idxs, x_idxs)
+            # cams_euc, Xeuc = badj.bundleAdjust()
             # TODO Update 3D points and tracks with optimised cameras and points
-            tk.update_ba_pts_tracks(Xeuc, tracks)
-            if h.debug >=0:
-                print("  Bundle Adjustment performed over", i,"images")
+            # tk.update_ba_pts_tracks(Xeuc, tracks)
+            # if h.debug >=0:
+            #     print("  Bundle Adjustment performed over", i,"images")
 
             # render results
-            if h.debug_display:
-                h.display_3d_points(Xeuc.T[:,:3])
+            # if h.debug_display:
+            #     h.display_3d_points(Xeuc.T[:,:3])
 
     if h.debug >=0:
         print ("Structure from Motion applied on sequence of", n, "images")
