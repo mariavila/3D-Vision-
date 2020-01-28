@@ -82,7 +82,7 @@ def main(argv):
                 # outliers
                 o1 = m_ijf[2]
                 o2 = m_ijf[3]
-
+                print(x1.shape)
                 while incr_match > 0:
                     # find fundamental matrix
                     F, mask = fd.compute_fundamental(x1, x2, eight_alg)
@@ -107,7 +107,7 @@ def main(argv):
                     x2 = np.concatenate((xs2, xn2), axis=0)
                     incr_match = xn1.shape[0]
                     eight_alg = True
-
+                print(x1.shape)
                 if h.debug >= 0:
                     print ("  Search with epipolar constraint finished")
                 if h.debug >0:
@@ -151,6 +151,7 @@ def main(argv):
 
             # TODO compute projective reprojection error
             error_prj = rc.compute_reproj_error(Xprj, cams_pr[i - 1], cams_pr[i], xr1, xr2)
+            print('REPROJECTION', error_prj)
             if h.debug >0:
                 print("    Projective reprojection error:", error_prj)
 
@@ -169,6 +170,7 @@ def main(argv):
             
             # TODO compute affine reprojection error (reuse your code)
             error_aff = rc.compute_reproj_error(Xaff, cams_aff[i -1], cams_aff[i], xr1, xr2)
+            print('REPROJECTION', error_aff)
             if h.debug >0:
                 print("    Affine reprojection error:", error_aff)
             

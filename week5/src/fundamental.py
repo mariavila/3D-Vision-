@@ -117,7 +117,7 @@ def search_more_matches(out1, out2, F):
     # Returns:
     #   xn1, xn2: new inliers
     #   o1, o2: still outliers
-    max_error = 0.00155
+    max_error = 0.000155
 
     xn1 = []
     xn2 = []
