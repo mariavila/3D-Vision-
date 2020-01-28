@@ -123,12 +123,11 @@ def search_more_matches(out1, out2, F):
     xn2 = []
     ou1 = []
     ou2 = []
-    
+
     eo1 = make_homogeneous(out1)
     eo2 = make_homogeneous(out2)
-    
+
     error = (eo2 @ F @ eo1.T).diagonal()
-    # error = np.dot(np.dot(np.transpose(eo1), F), eo2).diagonal()
     mask = np.abs(error)<max_error
     correct_args = np.where(mask==1)
     xn1 = out1[correct_args]
