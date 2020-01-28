@@ -82,7 +82,7 @@ def main(argv):
                 # outliers
                 o1 = m_ijf[2]
                 o2 = m_ijf[3]
-                print(x1.shape)
+                
                 while incr_match > 0:
                     # find fundamental matrix
                     F, mask = fd.compute_fundamental(x1, x2, eight_alg)
@@ -201,7 +201,7 @@ def main(argv):
            # render results
             if h.debug_display:
                 print(Xeuc.shape)
-                New_xeuc = Xeuc[:, np.where(np.abs(np.sum(Xeuc, axis = 0))<1e7)][:,0,:]
+                New_xeuc = Xeuc[:, np.where(np.abs(np.sum(Xeuc, axis = 0))<5e6)][:,0,:]
                 h.display_3d_points(New_xeuc.T[:,:3])
                 if h.debug >=0:
                     print ("Structure from Motion applied on sequence of", n, "images")

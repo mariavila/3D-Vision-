@@ -27,13 +27,7 @@ def estimate_aff_hom(cams, vps):
 def estimate_euc_hom(cams, vp_3d):
     P0 = cams[0]
     P1 = cams[1]
-
-#    vps1 = vps[0]
-#    vps2 = vps[1]
-#
-#    #find 3D coordinates by triangulation
-#    vp_3d = rc.estimate_3d_points(P1, P2, vps1.T, vps2.T)
-#    vp_3d = vp_3d.T
+    
     u = vp_3d[:,0]
     v = vp_3d[:,1]
     z = vp_3d[:,2]
@@ -47,7 +41,7 @@ def estimate_euc_hom(cams, vp_3d):
     w_arr = np.array([[w[0], w[1], w[2]],
                       [w[1], w[3], w[4]],
                       [w[2], w[4], w[5]]])
-
+    
     M = P1[:,:3]
     prod = np.linalg.inv(M.T @ w_arr @ M)
     A = np.linalg.cholesky(prod)
