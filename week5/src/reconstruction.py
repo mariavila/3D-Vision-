@@ -59,7 +59,8 @@ def resection(tracks, n_img):
     pts1 = []
     pts2 = []
     for t in tracks:
-        if n_img - 1 in t.ref_views and n_img in t.ref_views:
+        #if n_img - 1 in t.ref_views and n_img in t.ref_views:
+        if len(t.ref_views)>=3:
             pts_3d.append(t.pt)
             pts1.append(t.ref_views[n_img-1])
             pts2.append(t.ref_views[n_img])
