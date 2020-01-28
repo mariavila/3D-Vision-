@@ -118,17 +118,15 @@ def search_more_matches(out1, out2, F):
     #   xn1, xn2: new inliers
     #   o1, o2: still outliers
     max_error = 0.00155
-    n_out = np.shape(out1)[0]
 
     xn1 = []
     xn2 = []
     ou1 = []
     ou2 = []
-    eo1 = np.ones((n_out, 3))
-    eo1[:, :2] = out1
-    eo2 = np.ones((n_out, 3))
-    eo2[:, :2] = out2
-
+    
+    eo1 = make_homogeneous(out1)
+    eo2 = make_homogeneous(out2)
+    
     error = (eo2 @ F @ eo1.T).diagonal()
     # error = np.dot(np.dot(np.transpose(eo1), F), eo2).diagonal()
     mask = np.abs(error)<max_error

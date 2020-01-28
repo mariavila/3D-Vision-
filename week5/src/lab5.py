@@ -132,6 +132,7 @@ def main(argv):
             # TODO Compute the projective camera given F, according to
             # Result 9.15 of MVG (v = 0, lambda = 1).
                 cams_pr.append(rc.compute_proj_camera(F, i))
+                print(cams_pr)
             else:
             # TODO Compute resection as in MVG, Alg 7.1
                 cams_pr.append(rc.resection(tracks, i))
@@ -188,16 +189,18 @@ def main(argv):
                 print("    Euclidean reprojection error:", error_euc)
             #Bundle Adjustment
             #TODO Adapt cameras and 3D points to PySBA format
-            cams_ba, X_ba, x_ba, cam_idxs, x_idxs = ba.adapt_format_pysba(tracks)
-            badj = ba.PySBA(cams_ba, X_ba, x_ba, cam_idxs, x_idxs)
-            cams_euc, Xeuc = badj.bundleAdjust()
+#            cams_ba, X_ba, x_ba, cam_idxs, x_idxs = ba.adapt_format_pysba(tracks)
+#            badj = ba.PySBA(cams_ba, X_ba, x_ba, cam_idxs, x_idxs)
+#            cams_euc, Xeuc = badj.bundleAdjust()
             #TODO Update 3D points and tracks with optimised cameras and points
-            tk.update_ba_pts_tracks(Xeuc, tracks)
+#            tk.update_ba_pts_tracks(Xeuc, tracks)
             if h.debug >=0:
                 print("  Bundle Adjustment performed over", i,"images")
            # render results
             if h.debug_display:
-                h.display_3d_points(Xeuc.T[:,:3])
+                print(Xeuc.shape)
+                New_xeuc = Xeuc[:, np.where(np.abs(np.sum(Xeuc, axis = 0))<1e7)][:,0,:]
+                h.display_3d_points(New_xeuc.T[:,:3])
                 if h.debug >=0:
                     print ("Structure from Motion applied on sequence of", n, "images")
 

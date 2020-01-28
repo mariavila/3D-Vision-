@@ -9,14 +9,14 @@ def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
     # your code here
     lamb = 1
-    u,d,v = np.linalg.svd(F.T)
+    u,d,v = np.linalg.svd(F.T) #were looking for the epipole on the second image e'
     ep = v.T[:,-1]
     ep = ep/ep[-1]
     
     ep_x = np.array([[0, -ep[2], ep[1]],
                      [ep[2], 0, -ep[0]],
                      [-ep[1], ep[0], 0]])
-    P = np.c_[np.dot(ep_x,F), lamb*ep]
+    P = np.c_[ep_x @ F, lamb*ep]
 
     return P
 
@@ -40,7 +40,7 @@ def compute_reproj_error(xproj, cam1, cam2, x1, x2):
     x_hat1_h = (x_hat1 / x_hat1[2, :])[:-1, :]
     x_hat2_h = (x_hat2 / x_hat2[2, :])[:-1, :]
 
-    error = np.sqrt(((x_hat1_h - x1)**2 + (x_hat2_h - x2)**2).sum())
+    error =((x_hat1_h - x1)**2 + (x_hat2_h - x2)**2).sum()
 
     return error
 
@@ -49,7 +49,6 @@ def transform(aff_hom, Xprj, cams_pr):
     #cams_pr1 = cams_pr[0]
     
     cams_aff = cams_pr @ np.linalg.inv(aff_hom)
-
     #Xaff = np.linalg.inv(aff_hom) @ Xprj
     Xaff = aff_hom @ Xprj
     Xaff = Xaff / Xaff[-1, :]
