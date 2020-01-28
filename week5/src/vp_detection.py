@@ -20,10 +20,11 @@ class VPDetection(object):
         focal_length: Focal length of the camera (in pixels)
         seed: Seed for reproducibility due to RANSAC
     """
+
     def __init__(self,
                  length_thresh=30,
                  principal_point=(1520.69, 1006.81),
-                 focal_length=(2759.48 + 2764.16)/2.0,
+                 focal_length=(2759.48 + 2764.16) / 2.0,
                  seed=None):
         self._length_thresh = length_thresh
         self._principal_point = principal_point
@@ -41,7 +42,7 @@ class VPDetection(object):
         self.__seed = seed  # Set seed for reproducibility
         noise_ratio = 0.5  # Outlier/inlier ratio for RANSAC estimation
         # Probability of all samples being inliers
-        p = (1.0 / 3.0) * ((1.0 - noise_ratio)**2.0)
+        p = (1.0 / 3.0) * ((1.0 - noise_ratio) ** 2.0)
 
         # Total number of iterations for RANSAC
         conf = 0.9999
@@ -162,7 +163,7 @@ class VPDetection(object):
         # Create LSD detector with default parameters
         # PCO: LineSegmentDetector is not implemented in opencv > 3.4.6 due to
         # original code license issues. I have replaced it by fast line detector
-        #lsd = cv2.createLineSegmentDetector(0)
+        # lsd = cv2.createLineSegmentDetector(0)
         fld = cv2.ximgproc.createFastLineDetector()
 
         # Detect lines in the image
@@ -170,7 +171,7 @@ class VPDetection(object):
         # such that the 4 numbers in the last dimension are (x1, y1, x2, y2)
         # These denote the start and end positions of a line
         # PCO: I adapt the result to expected
-        #lines = lsd.detect(img_copy)[0]
+        # lines = lsd.detect(img_copy)[0]
         lines = fld.detect(img_copy)
 
         # Remove singleton dimension
@@ -355,7 +356,7 @@ class VPDetection(object):
         sphere_grid = np.bincount(
             bin_num, weights=weights,
             minlength=num_bins_lat * num_bins_lon).reshape(
-                (num_bins_lat, num_bins_lon)).astype(np.float32)
+            (num_bins_lat, num_bins_lon)).astype(np.float32)
 
         # Add the 3 x 3 smoothed votes on top of the original votes for
         # stability (refer to paper)

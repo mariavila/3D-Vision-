@@ -29,6 +29,7 @@ import numpy as np
 from scipy.sparse import lil_matrix
 from scipy.optimize import least_squares
 
+
 class PySBA:
     """Python class for Simple Bundle Adjustment"""
 
@@ -75,7 +76,6 @@ class PySBA:
 
         return cos_theta * points + sin_theta * np.cross(v, points) + dot * (1 - cos_theta) * v
 
-
     def project(self, points, cameraArray):
         """Convert 3-D points to 2-D by projecting onto images."""
         points_proj = self.rotate(points, cameraArray[:, :3])
@@ -88,7 +88,6 @@ class PySBA:
         r = 1 + k1 * n + k2 * n ** 2
         points_proj *= (r * f)[:, np.newaxis]
         return points_proj
-
 
     def fun(self, params, n_cameras, n_points, camera_indices, point_indices, points_2d):
         """Compute residuals.
@@ -116,7 +115,6 @@ class PySBA:
 
         return A
 
-
     def optimizedParams(self, params, n_cameras, n_points):
         """
         Retrieve camera parameters and 3-D coordinates.
@@ -125,7 +123,6 @@ class PySBA:
         points_3d = params[n_cameras * 9:].reshape((n_points, 3))
 
         return camera_params, points_3d
-
 
     def bundleAdjust(self):
         """ Returns the bundle adjusted parameters, in this case the optimized
@@ -141,7 +138,7 @@ class PySBA:
         res = least_squares(self.fun, x0, jac_sparsity=A, verbose=2, x_scale='jac', ftol=1e-4, method='trf',
                             args=(numCameras, numPoints, self.cameraIndices, self.point2DIndices, self.points2D))
 
-        #params = self.optimizedParams(res.x, numCameras, numPoints, self.cameraIndices, self.point2DIndices, self.points2D)
+        # params = self.optimizedParams(res.x, numCameras, numPoints, self.cameraIndices, self.point2DIndices, self.points2D)
         params, points_3d = self.optimizedParams(res.x, numCameras, numPoints)
 
         return params, points_3d
