@@ -51,11 +51,8 @@ def estimate_euc_hom(cams, vp_3d):
     M = P1[:,:3]
     prod = np.linalg.inv(M.T @ w_arr @ M)
     A = np.linalg.cholesky(prod)
-#    A_it = np.linalg.inv(A.T)
-#    H_metric = np.array([[A_it[0,0],A_it[0,1],A_it[0,2], 0],
-#                  [A_it[1,0], A_it[1,1], A_it[1,2], 0],
-#                  [A_it[2,0], A_it[2,1], A_it[2,2], 0],
-#                  [0, 0, 0, 1]])
+    A = np.linalg.inv(A)
+    
     H_metric = np.array([[A[0,0],A[0,1],A[0,2], 0],
                          [A[1,0], A[1,1], A[1,2], 0],
                          [A[2,0], A[2,1], A[2,2], 0],
